@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">Pre-eclampsia Screener</string>
+    <string name="device_id">DID</string>
+    <string name="patient_id">PID</string>
+
+    <string name="battery_alert_description">Battery Alert</string>
+    <string name="battery_0_description">Battery Level 0</string>
+    <string name="battery_1_description">Battery Level 1</string>
+    <string name="battery_2_description">Battery Level 2</string>
+    <string name="battery_3_description">Battery Level 3</string>
+    <string name="battery_4_description">Battery Level 4</string>
+    <string name="battery_5_description">Battery Level 5</string>
+    <string name="battery_6_description">Battery Level 6</string>
+    <string name="battery_full_description">Battery Level Full</string>
 </resources>
