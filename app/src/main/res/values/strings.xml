@@ -12,4 +12,6 @@
     <string name="battery_5_description">Battery Level 5</string>
     <string name="battery_6_description">Battery Level 6</string>
     <string name="battery_full_description">Battery Level Full</string>
+
+    <string name="device_connect_button">Connect</string>
 </resources>

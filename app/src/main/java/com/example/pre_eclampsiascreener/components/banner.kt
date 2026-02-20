@@ -37,7 +37,7 @@ import com.example.pre_eclampsiascreener.R
 fun SmallTopAppBarExample() {
     Scaffold(
         topBar = {
-            Banner(Modifier, {})
+            Banner {}
         },
     ) { innerPadding ->
         Column(
@@ -46,7 +46,6 @@ fun SmallTopAppBarExample() {
                 .fillMaxSize()
         ) {
             DeviceInfoBanner(
-                Modifier,
                 "PES-XXXX",
                 "0000001",
                 75
@@ -60,7 +59,7 @@ fun SmallTopAppBarExample() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Banner(modifier: Modifier, onBackClick: () -> Unit) {
+fun Banner( onBackClick: () -> Unit) {
     TopAppBar(
         colors = TopAppBarDefaults.topAppBarColors( // TODO: change
             containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -92,13 +91,13 @@ fun Banner(modifier: Modifier, onBackClick: () -> Unit) {
 @Composable
 fun PreviewDeviceInfoBanner(){
     Row(Modifier.background(colorResource(R.color.white))) {
-        DeviceInfoBanner(Modifier, "PES-XXXX", "0000001", 75)
+        DeviceInfoBanner("PES-XXXX", "0000001", 75)
     }
 }
 
 
 @Composable
-fun DeviceInfoBanner(modifier: Modifier, devID: String, patientID: String, battery: Int){
+fun DeviceInfoBanner(devID: String, patientID: String, battery: Int){
     val (batteryIcon, batteryDescription) = when (battery) {
         in 0..4 -> R.drawable.outline_battery_android_0_24 to R.string.battery_0_description
         in 5..20 -> R.drawable.outline_battery_android_frame_1_24 to R.string.battery_1_description
