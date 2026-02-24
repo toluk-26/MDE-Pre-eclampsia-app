@@ -15,16 +15,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import com.example.pre_eclampsiascreener.R
 
-@Preview
+
+
+@Preview(showBackground = true)
 @Composable
-fun deviceInfoPreview() {
-    deviceInfo("PES-0000", "FD:6D:43:3B:F0:E8")
+fun DeviceInfoPreview() {
+    DeviceInfoCard("PES-F0E8", "FD:6D:43:3B:F0:E8", {})
 }
 
 @Composable
-fun deviceInfo(deviceName: String, macAddr: String) {
+fun DeviceInfoCard(deviceName: String, macAddr: String, onDeviceClick: () -> Unit) {
     TextButton(
-        onClick = {},
+        onClick = onDeviceClick,
         modifier = Modifier
 //            .background(colorResource(R.color.grey))
             .fillMaxWidth(),

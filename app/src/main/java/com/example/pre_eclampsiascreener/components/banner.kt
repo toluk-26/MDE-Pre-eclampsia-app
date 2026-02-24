@@ -23,7 +23,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -34,7 +34,7 @@ import com.example.pre_eclampsiascreener.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview
 @Composable
-fun SmallTopAppBarExample() {
+fun TopAppBarPreview() {
     Scaffold(
         topBar = {
             Banner {}
@@ -90,8 +90,8 @@ fun Banner( onBackClick: () -> Unit) {
 @Preview
 @Composable
 fun PreviewDeviceInfoBanner(){
-    Row(Modifier.background(colorResource(R.color.white))) {
-        DeviceInfoBanner("PES-XXXX", "0000001", 75)
+    Row(Modifier.background(Color.White)) {
+        DeviceInfoBanner("PES-XXXX", "0000001", 43)
     }
 }
 
@@ -105,7 +105,7 @@ fun DeviceInfoBanner(devID: String, patientID: String, battery: Int){
         in 37..52 -> R.drawable.outline_battery_android_frame_3_24 to R.string.battery_3_description
         in 53..68 -> R.drawable.outline_battery_android_frame_4_24 to R.string.battery_4_description
         in 69..84 -> R.drawable.outline_battery_android_frame_5_24 to R.string.battery_5_description
-        in 85..85 -> R.drawable.outline_battery_android_frame_6_24 to R.string.battery_6_description
+        in 85..95 -> R.drawable.outline_battery_android_frame_6_24 to R.string.battery_6_description
         in 96..100 -> R.drawable.outline_battery_android_full_24 to R.string.battery_full_description
         else -> R.drawable.outline_battery_android_alert_24 to R.string.battery_alert_description
     }
@@ -113,17 +113,17 @@ fun DeviceInfoBanner(devID: String, patientID: String, battery: Int){
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(colorResource(R.color.purple_500)), // TODO: change colors
+            .padding(3.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = stringResource(R.string.device_id) + ": $devID",
+            text =  devID,
             modifier = Modifier
                 .weight(1f),
             textAlign = TextAlign.Start,
         )
         Text(
-            text = stringResource(R.string.patient_id) + ": $patientID",
+            text = "PID: $patientID",
             modifier = Modifier.weight(1f),
             textAlign = TextAlign.Center
         )
