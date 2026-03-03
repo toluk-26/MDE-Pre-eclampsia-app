@@ -7,9 +7,18 @@ junitVersion = "1.3.0"
 espressoCore = "3.7.0"
 lifecycleRuntimeKtx = "2.10.0"
 activityCompose = "1.12.4"
-composeBom = "2026.02.00"
+composeBom = "2026.02.01"
 materialIconsExtended = "1.7.8"
 kotlinxDatetime = "0.7.1"
+bleKtx = "2.11.0"
+uiTextGoogleFonts = "1.10.4"
+navigationCompose = "2.9.7"
+scanner = "1.6.0"
+kotlinBle = "2.0.0-alpha15"
+lifecycleService = "2.10.0"
+permissionsBle = "2.4.0"
+scannerVersion = "1.3.1"
+
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -23,11 +32,21 @@ androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }
 androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
 androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
-androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest", version = "1.10.4" }
 androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "materialIconsExtended" }
 kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlinxDatetime" }
+ble-ktx = { group = "no.nordicsemi.android", name = "ble-ktx", version.ref = "bleKtx" }
+androidx-compose-ui-text-google-fonts = { group = "androidx.compose.ui", name = "ui-text-google-fonts", version.ref = "uiTextGoogleFonts" }
+androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
+scanner = { group = "no.nordicsemi.android.support.v18", name = "scanner", version.ref = "scanner" }
+client-android = { group = "no.nordicsemi.kotlin.ble", name = "client-android", version.ref = "kotlinBle" }
+core = { group = "no.nordicsemi.kotlin.ble", name = "core", version.ref = "kotlinBle" }
+androidx-lifecycle-service = { group = "androidx.lifecycle", name = "lifecycle-service", version.ref = "lifecycleService" }
+permissions-ble = { group = "no.nordicsemi.android.common", name = "permissions-ble", version = "2.9.1" }
+ble-scanner = { group = "no.nordicsemi.android.kotlin.ble", name = "scanner", version.ref = "scannerVersion" }
+client-core-android = { group = "no.nordicsemi.kotlin.ble", name = "client-core-android", version.ref = "kotlinBle" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

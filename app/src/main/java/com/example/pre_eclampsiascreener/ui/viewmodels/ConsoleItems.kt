@@ -1,4 +1,6 @@
-package com.example.pre_eclampsiascreener.console
+package com.example.pre_eclampsiascreener.ui.viewmodels
+
+import com.example.pre_eclampsiascreener.data.ConsoleItem
 
 object ConsoleItems {
     val items = mutableListOf<ConsoleItem>()
