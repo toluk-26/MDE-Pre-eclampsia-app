@@ -2,33 +2,34 @@ package com.example.pre_eclampsiascreener.ui.screens
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.example.pre_eclampsiascreener.data.DeviceInfo
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.pre_eclampsiascreener.ui.components.DeviceInfoCard
+import com.example.pre_eclampsiascreener.ui.viewmodels.DeviceViewModel
 
 @Composable
 fun DeviceSelectionScreen(
-    devices: List<DeviceInfo>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    devicesVM: DeviceViewModel = viewModel(),
 ){
     Column(
         modifier = modifier
             .padding(6.dp, 0.dp)
     ) {
-        if(devices.isEmpty()) {
+        if(devicesVM.listOfDevices().isEmpty()) {
             //TODO: empty page
             Text(
                 text = "no devices"
             )
         } else {
-            devices.forEach { device ->
+            devicesVM.listOfDevices().forEach { device ->
                 DeviceInfoCard(device, {})
-                Divider(thickness = 1.dp, color = Color.Gray)
+                HorizontalDivider(thickness = 1.dp, color = Color.Gray)
             }
         }
     }

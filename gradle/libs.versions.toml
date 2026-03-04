@@ -18,6 +18,8 @@ kotlinBle = "2.0.0-alpha15"
 lifecycleService = "2.10.0"
 permissionsBle = "2.4.0"
 scannerVersion = "1.3.1"
+foundationLayout = "1.10.3"
+vico = "3.0.2"
 
 
 [libraries]
@@ -47,6 +49,9 @@ androidx-lifecycle-service = { group = "androidx.lifecycle", name = "lifecycle-s
 permissions-ble = { group = "no.nordicsemi.android.common", name = "permissions-ble", version = "2.9.1" }
 ble-scanner = { group = "no.nordicsemi.android.kotlin.ble", name = "scanner", version.ref = "scannerVersion" }
 client-core-android = { group = "no.nordicsemi.kotlin.ble", name = "client-core-android", version.ref = "kotlinBle" }
+androidx-compose-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout", version.ref = "foundationLayout" }
+compose-m3 = { group = "com.patrykandpatrick.vico", name = "compose-m3", version.ref = "vico" }
+compose = { group = "com.patrykandpatrick.vico", name = "compose", version.ref = "vico" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

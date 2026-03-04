@@ -11,7 +11,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.pre_eclampsiascreener.data.ConsoleItem
-import com.example.pre_eclampsiascreener.ui.viewmodels.ConsoleItems
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.ExperimentalTime
@@ -51,13 +50,15 @@ fun ConsoleList(consoleEntries: List<ConsoleItem>, modifier: Modifier = Modifier
 @Preview
 @Composable
 fun ConsoleListPreview() {
-    ConsoleItems.add(ConsoleItem(1771558313, 0))
-    ConsoleItems.add(ConsoleItem(1771558314, 0))
-    ConsoleItems.add(ConsoleItem(1771558315, 0))
-    ConsoleItems.add(ConsoleItem(1771558316, 0))
+    val consoleItems = listOf(
+        ConsoleItem(1771558313, 0),
+        ConsoleItem(1771558314, 0),
+        ConsoleItem(1771558315, 0),
+        ConsoleItem(1771558316, 0),
+    )
 
     ConsoleList(
-        ConsoleItems.listOfConsoleItems(),
+        consoleItems,
         Modifier
             .fillMaxWidth()
     )

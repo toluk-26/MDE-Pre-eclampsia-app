@@ -55,6 +55,9 @@ dependencies {
     implementation(libs.permissions.ble)
     implementation(libs.ble.scanner)
     implementation(libs.client.core.android)
+    implementation(libs.androidx.compose.foundation.layout)
+    implementation(libs.compose.m3)
+    implementation(libs.compose)
 
     testImplementation(libs.junit)
 

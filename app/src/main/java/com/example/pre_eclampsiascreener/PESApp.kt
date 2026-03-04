@@ -12,11 +12,15 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.pre_eclampsiascreener.data.DeviceInfo
 import com.example.pre_eclampsiascreener.ui.AppViewModel
 import com.example.pre_eclampsiascreener.ui.components.Banner
+import com.example.pre_eclampsiascreener.ui.screens.ConfigureScreen
 import com.example.pre_eclampsiascreener.ui.screens.DeviceSelectionScreen
+import com.example.pre_eclampsiascreener.ui.screens.MenuScreen
+import com.example.pre_eclampsiascreener.ui.screens.NewPatientScreen
 import com.example.pre_eclampsiascreener.ui.theme.AppTheme
+import com.example.pre_eclampsiascreener.ui.viewmodels.ConsoleViewModel
+import com.example.pre_eclampsiascreener.ui.viewmodels.DataViewModel
 
 enum class AppScreen {
     DeviceConnection,
@@ -26,11 +30,21 @@ enum class AppScreen {
     NewPatient,
     Console,
     Demo,
-    Calibrate
+    Calibrate;
+    override fun toString(): String =
+        when(this){
+            DeviceConnection -> "Device Connection"
+            ViewData -> "View Data"
+            Configure -> "Configure"
+            NewPatient -> "New Patient"
+            Console -> "Console"
+            Demo -> "Demo"
+            else -> this.toString()
+        }
 }
 
 @Composable
-fun AppScreen(
+fun PESApp(
     viewModel: AppViewModel = viewModel(),
     navController: NavHostController = rememberNavController()
 ) {
@@ -40,6 +54,10 @@ fun AppScreen(
     val currentScreen = AppScreen.valueOf(
         backStackEntry?.destination?.route ?: AppScreen.DeviceConnection.name
     )
+    // sensor data
+    val dataViewModel: DataViewModel = viewModel()
+    // logs
+    val consoleViewModel: ConsoleViewModel = viewModel()
 
     Scaffold(
         topBar = {
@@ -54,10 +72,29 @@ fun AppScreen(
             Modifier.padding(innerPadding)
         ) {
             composable(route = AppScreen.DeviceConnection.name){
-                DeviceSelectionScreen()
+                DeviceSelectionScreen(
+
+                )
+            }
+            composable(route = AppScreen.Options.name){
+                MenuScreen(
+                    navController = navController
+                )
+            }
+            composable(route = AppScreen.ViewData.name){
+
+            }
+            composable(route = AppScreen.Configure.name){
+                ConfigureScreen(
+
+                )
+            }
+            composable(route = AppScreen.NewPatient.name){
+                NewPatientScreen(
+
+                )
             }
         }
-
     }
 }
 
@@ -65,6 +102,6 @@ fun AppScreen(
 @Composable
 fun AppScreenPreview() {
     AppTheme {
-        AppScreen()
+        PESApp()
     }
 }
