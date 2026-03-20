@@ -3,7 +3,6 @@ package com.example.pre_eclampsiascreener.ui.components
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -13,21 +12,22 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.pre_eclampsiascreener.R
-import com.example.pre_eclampsiascreener.data.DeviceInfo
 
 
 @Preview(showBackground = true)
 @Composable
 fun DeviceInfoPreview() {
-    val device = DeviceInfo("PES-F0E8", "FD:6D:43:3B:F0:E8", -43)
-    DeviceInfoCard(device, {})
+    DeviceInfoCard(null, "FD:6D:43:3B:F0:E8", -90,{})
 }
 
 @Composable
-fun DeviceInfoCard(device: DeviceInfo, onDeviceClick: () -> Unit) {
+fun DeviceInfoCard(
+    name: String?,
+    address: String,
+    rssi: Int,
+    onDeviceClick: () -> Unit) {
     TextButton(
         onClick = onDeviceClick,
         modifier = Modifier
@@ -42,15 +42,16 @@ fun DeviceInfoCard(device: DeviceInfo, onDeviceClick: () -> Unit) {
                     .weight(1f),
             ) {
                 Text(
-                    device.name,
+                    name ?: "Unknown",
                     fontSize = 30.sp,
                 )
                 Text(
-                    device.address,
+                    address,
                     fontSize = 14.sp,
                     color = Color.Gray
                 )
             }
+            Text(rssi.toString())
 
             Text(
                 text = stringResource(R.string.device_connect_button),

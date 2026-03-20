@@ -15,7 +15,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.pre_eclampsiascreener.ui.AppViewModel
 import com.example.pre_eclampsiascreener.ui.components.Banner
 import com.example.pre_eclampsiascreener.ui.screens.ConfigureScreen
-import com.example.pre_eclampsiascreener.ui.screens.DeviceSelectionScreen
+import com.example.pre_eclampsiascreener.ui.screens.ConnectScreen
 import com.example.pre_eclampsiascreener.ui.screens.MenuScreen
 import com.example.pre_eclampsiascreener.ui.screens.NewPatientScreen
 import com.example.pre_eclampsiascreener.ui.theme.AppTheme
@@ -72,7 +72,7 @@ fun PESApp(
             Modifier.padding(innerPadding)
         ) {
             composable(route = AppScreen.DeviceConnection.name){
-                DeviceSelectionScreen(
+                ConnectScreen(
 
                 )
             }
