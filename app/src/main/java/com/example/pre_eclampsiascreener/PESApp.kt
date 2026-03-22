@@ -73,7 +73,9 @@ fun PESApp(
         ) {
             composable(route = AppScreen.DeviceConnection.name){
                 ConnectScreen(
-
+                    onDeviceSelect = {
+                        navController.navigate(AppScreen.Options.name)
+                    }
                 )
             }
             composable(route = AppScreen.Options.name){

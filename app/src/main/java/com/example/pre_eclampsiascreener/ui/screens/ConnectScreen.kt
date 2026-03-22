@@ -2,7 +2,6 @@ package com.example.pre_eclampsiascreener.ui.screens
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -23,17 +22,17 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.pre_eclampsiascreener.ui.components.DeviceInfoCard
 import com.example.pre_eclampsiascreener.ui.viewmodels.ScanViewModel
+import no.nordicsemi.kotlin.ble.client.android.Peripheral
 import no.nordicsemi.kotlin.ble.core.android.AndroidEnvironment
-import no.nordicsemi.kotlin.ble.environment.android.compose.LocalEnvironmentOwner
 import no.nordicsemi.kotlin.ble.environment.android.compose.LocalEnvironmentOwner.current
 
 @Composable
 fun ConnectScreen(
+    onDeviceSelect: (Peripheral) -> Unit,
     modifier: Modifier = Modifier,
     vm: ScanViewModel = viewModel(),
 ){
-    val environment = LocalEnvironmentOwner.current
-    val bleState by vm.bleState.collectAsStateWithLifecycle()
+    val environment = current
     val state by vm.uiState.collectAsStateWithLifecycle()
 
     // Scanning requires BLUETOOTH_SCAN permission, but
@@ -59,7 +58,7 @@ fun ConnectScreen(
         if (permissionGranted) {
             vm.startScan()
         } else {
-//            vm.stopScan()
+            vm.stopScan()
         }
     }
 
@@ -90,7 +89,11 @@ fun ConnectScreen(
                         device.peripheral.name,
                         device.peripheral.address,
                         device.rssi,
-                        {})
+                        onDeviceClick = {
+                            vm.onPeripheralSelected(device.peripheral)
+                            onDeviceSelect(device.peripheral)
+                        }
+                    )
                     HorizontalDivider(thickness = 1.dp, color = Color.Gray)
                 }
             }

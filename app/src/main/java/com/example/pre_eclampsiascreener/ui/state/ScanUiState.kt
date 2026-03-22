@@ -7,6 +7,6 @@ import no.nordicsemi.kotlin.ble.core.Manager
 data class ScanUiState(
     val bluetoothState: Manager.State = Manager.State.POWERED_OFF,
     val isScanning: Boolean = false,
-    val peripherals: Map<Peripheral, ScannedDevice> = emptyMap(),   // Nordic Peripheral directly — matches sample
+    val peripherals: Map<Peripheral, ScannedDevice> = emptyMap(),
     val error: String? = null,
 )
