@@ -27,24 +27,24 @@ fun MenuScreen(
     ) {
         // View Data button
         MenuButton(
-            { navController.navigate(AppScreen.ViewData) },
+            { navController.navigate(AppScreen.ViewData.name) },
             AppScreen.ViewData.toString()
         )
         MenuButton(
-            { navController.navigate(AppScreen.Configure) },
+            { navController.navigate(AppScreen.Configure.name) },
             AppScreen.Configure.toString()
         )
         MenuButton(
-            { navController.navigate(AppScreen.NewPatient) },
+            { navController.navigate(AppScreen.NewPatient.name) },
             AppScreen.NewPatient.toString()
         )
         if (demoMode) {
             MenuButton(
-                { navController.navigate(AppScreen.Console) },
+                { navController.navigate(AppScreen.Console.name) },
                 AppScreen.Console.toString()
             )
             MenuButton(
-                { navController.navigate(AppScreen.Demo) },
+                { navController.navigate(AppScreen.Demo.name) },
                 AppScreen.Demo.toString()
             )
         }

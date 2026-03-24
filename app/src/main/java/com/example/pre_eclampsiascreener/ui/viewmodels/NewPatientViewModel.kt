@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.update
 
 class NewPatientViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(PatientData())
-    val UiState: StateFlow<PatientData> = _uiState.asStateFlow()
+    val uiState: StateFlow<PatientData> = _uiState.asStateFlow()
 
     fun idValue(): String {
         if(_uiState.value.patientId == null)

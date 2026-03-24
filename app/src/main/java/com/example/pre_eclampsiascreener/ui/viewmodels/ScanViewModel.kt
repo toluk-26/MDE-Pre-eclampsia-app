@@ -5,12 +5,10 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pre_eclampsiascreener.MainApplication
+import com.example.pre_eclampsiascreener.ble.BleManager
 import com.example.pre_eclampsiascreener.data.ScannedDevice
 import com.example.pre_eclampsiascreener.ui.state.ScanUiState
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,35 +18,37 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import no.nordicsemi.kotlin.ble.client.android.CentralManager
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
-import no.nordicsemi.kotlin.ble.client.android.native
-import no.nordicsemi.kotlin.ble.core.Phy
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.seconds
 
 private const val TAG = "ScanViewModel"
 
 class ScanViewModel(application: Application) : AndroidViewModel(application) {
-    private val environment = (application as MainApplication).environment
 
-    private val centralManager: CentralManager =
-        CentralManager.native(environment, viewModelScope)
+    private val bleManager: BleManager = (application as MainApplication).bleManager
+
+    val centralManager: CentralManager = bleManager.centralManager
 
     private val _uiState = MutableStateFlow(ScanUiState())
     val uiState: StateFlow<ScanUiState> = _uiState.asStateFlow()
 
-    val bleState = centralManager.state
-    private var connectedPeripheral: Peripheral? = null
-    private var connectedScope: CoroutineScope? = null
     private var scanJob: Job? = null
+
+    init {
+        centralManager.state
+            .onEach { state ->
+                _uiState.update { it.copy(bluetoothState = state) }
+            }
+            .launchIn(viewModelScope)
+    }
 
     fun startScan() {
         if (_uiState.value.isScanning) {
             Log.d(TAG, "not scanning. exit")
             return
         }
+        bleManager.disconnect()
 
         // can scan
         scanJob = centralManager
@@ -120,38 +120,10 @@ class ScanViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun onPeripheralSelected(peripheral: Peripheral) {
-        connectedScope?.launch {
-            Log.w(TAG, "Connection already exist. disconnecting")
-            try {
-                peripheral.disconnect()
-                Log.d(TAG, "Disconnected from ${peripheral.name}!")
-            } catch (e: Exception) {
-                Log.e(TAG, "Disconnect failed, $e")
-            }
-        } ?: run {
-            connectedScope = CoroutineScope(context = Dispatchers.IO)
-                .apply {
-                    launch {
-                        try {
-                            Log.d(TAG, "Connecting to ${peripheral.name}...")
-                            centralManager.connect(
-                                peripheral = peripheral,
-                                CentralManager.ConnectionOptions.Direct(
-                                    timeout = 3.seconds,
-                                    retry = 2,
-                                    retryDelay = 1.seconds,
-                                    Phy.PHY_LE_2M,
-                                )
+        bleManager.connect(peripheral)
+    }
 
-                            )
-                            Log.d(TAG, "Connected to ${peripheral.name}!")
-                        } catch (e: Exception) {
-                            Log.e(TAG, "Connect failed, $e")
-                            connectedScope?.cancel()
-                            connectedScope = null
-                        }
-                    }
-                }
-        }
+    fun close() {
+        TODO("Not yet implemented")
     }
 }

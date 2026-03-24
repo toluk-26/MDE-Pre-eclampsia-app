@@ -17,6 +17,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -31,10 +32,20 @@ fun ConfigureScreen(
     modifier: Modifier = Modifier,
     configureViewModel: ConfigureViewModel = viewModel()
 ) {
-    val configureUiState by configureViewModel.UiState.collectAsState()
+    val uiState by configureViewModel.uiState.collectAsState()
+
+    val minBloodPressure = remember(uiState.minSystolic, uiState.minDiastolic) {
+        if (uiState.minSystolic == null && uiState.minDiastolic == null) ""
+        else "${uiState.minSystolic ?: ""}/${uiState.minDiastolic ?: ""}"
+    }
+
+    val maxBloodPressure = remember(uiState.maxSystolic, uiState.maxDiastolic) {
+        if (uiState.maxSystolic == null && uiState.maxDiastolic == null) ""
+        else "${uiState.maxSystolic ?: ""}/${uiState.maxDiastolic ?: ""}"
+    }
 
     Column(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier,
     ) {
         Text(
             text = "Thresholds"
@@ -44,7 +55,7 @@ fun ConfigureScreen(
             Column {
                 Text("Minimum")
                 OutlinedTextField(
-                    value = configureViewModel.minBloodPressure(),
+                    value = minBloodPressure,
                     onValueChange = configureViewModel::setMinBloodPressure,
                     modifier = Modifier.width(120.dp),
                     placeholder = { Text("90/60") },
@@ -56,7 +67,7 @@ fun ConfigureScreen(
             Column {
                 Text("Maximum")
                 OutlinedTextField(
-                    value = configureViewModel.maxBloodPressure(),
+                    value = maxBloodPressure,
                     onValueChange = configureViewModel::setMaxBloodPressure,
                     modifier = Modifier.width(120.dp),
                     placeholder = { Text("120/80") },

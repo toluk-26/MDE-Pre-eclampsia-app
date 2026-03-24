@@ -1,11 +1,8 @@
 package com.example.pre_eclampsiascreener.ui.screens
 
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -26,7 +23,6 @@ import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.axis.HorizontalAxis
 import com.patrykandpatrick.vico.compose.cartesian.axis.VerticalAxis
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberAxisGuidelineComponent
-import com.patrykandpatrick.vico.compose.cartesian.data.CartesianChartModel
 import com.patrykandpatrick.vico.compose.cartesian.data.CartesianChartModelProducer
 import com.patrykandpatrick.vico.compose.cartesian.data.CartesianValueFormatter
 import com.patrykandpatrick.vico.compose.cartesian.data.lineSeries
@@ -165,7 +161,7 @@ private fun ComposeBasicLineChartPreview() {
     val conf: ConfigureViewModel = viewModel()
     conf.setMaxBloodPressure("150/50")
     conf.setMinBloodPressure("90/30")
-    val perf = conf.UiState.collectAsState()
+    val perf = conf.uiState.collectAsState()
     val decorations = listOf(
         rememberHorizontalLine("max Diastolic", perf.value.maxDiastolic?.toDouble() ?: 0.0),
         rememberHorizontalLine("min Diastolic", perf.value.minDiastolic?.toDouble() ?: 0.0),

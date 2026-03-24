@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.update
 
 class ConfigureViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(ConfigureData())
-    val UiState: StateFlow<ConfigureData> = _uiState.asStateFlow()
+    val uiState: StateFlow<ConfigureData> = _uiState.asStateFlow()
 
     fun setPatientId(pid: String){
         _uiState.update { currentState ->
@@ -30,8 +30,8 @@ class ConfigureViewModel : ViewModel() {
     }
 
     fun minBloodPressure(): String {
-        val sys = UiState.value.minSystolic
-        val dia = UiState.value.minDiastolic
+        val sys = uiState.value.minSystolic
+        val dia = uiState.value.minDiastolic
 
         return if (sys == null && dia == null) {
             ""
@@ -41,8 +41,8 @@ class ConfigureViewModel : ViewModel() {
     }
 
     fun maxBloodPressure(): String {
-        val sys = UiState.value.maxSystolic
-        val dia = UiState.value.maxDiastolic
+        val sys = uiState.value.maxSystolic
+        val dia = uiState.value.maxDiastolic
 
         return if (sys == null && dia == null) {
             ""

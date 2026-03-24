@@ -1,8 +1,11 @@
 package com.example.pre_eclampsiascreener
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -12,35 +15,28 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.pre_eclampsiascreener.ble.repo.BatteryRepository
 import com.example.pre_eclampsiascreener.ui.AppViewModel
 import com.example.pre_eclampsiascreener.ui.components.Banner
+import com.example.pre_eclampsiascreener.ui.components.DeviceInfoBanner
 import com.example.pre_eclampsiascreener.ui.screens.ConfigureScreen
 import com.example.pre_eclampsiascreener.ui.screens.ConnectScreen
 import com.example.pre_eclampsiascreener.ui.screens.MenuScreen
 import com.example.pre_eclampsiascreener.ui.screens.NewPatientScreen
 import com.example.pre_eclampsiascreener.ui.theme.AppTheme
-import com.example.pre_eclampsiascreener.ui.viewmodels.ConsoleViewModel
-import com.example.pre_eclampsiascreener.ui.viewmodels.DataViewModel
 
 enum class AppScreen {
-    DeviceConnection,
-    Options,
-    ViewData,
-    Configure,
-    NewPatient,
-    Console,
-    Demo,
-    Calibrate;
-    override fun toString(): String =
-        when(this){
-            DeviceConnection -> "Device Connection"
-            ViewData -> "View Data"
-            Configure -> "Configure"
-            NewPatient -> "New Patient"
-            Console -> "Console"
-            Demo -> "Demo"
-            else -> this.toString()
-        }
+    DeviceConnection, Options, ViewData, Configure, NewPatient, Console, Demo, Calibrate;
+
+    override fun toString(): String = when (this) {
+        DeviceConnection -> "Device Connection"
+        ViewData -> "View Data"
+        Configure -> "Configure"
+        NewPatient -> "New Patient"
+        Console -> "Console"
+        Demo -> "Demo"
+        else -> this.toString()
+    }
 }
 
 @Composable
@@ -54,46 +50,55 @@ fun PESApp(
     val currentScreen = AppScreen.valueOf(
         backStackEntry?.destination?.route ?: AppScreen.DeviceConnection.name
     )
-    // sensor data
-    val dataViewModel: DataViewModel = viewModel()
-    // logs
-    val consoleViewModel: ConsoleViewModel = viewModel()
+
+    val batteryLevel by BatteryRepository.data.collectAsState()
 
     Scaffold(
         topBar = {
-            Banner(
-            {}
-        )
-        }
+            Column {
+                Banner {}
+                if (currentScreen != AppScreen.DeviceConnection) {
+                    DeviceInfoBanner(
+                        "PES-XXXX", "0000001", batteryLevel.batteryLevel
+                    )
+                }
+            }
+        },
+                modifier = Modifier
+                .fillMaxSize()
     ) { innerPadding ->
         NavHost(
-            navController,
-            AppScreen.DeviceConnection.name,
-            Modifier.padding(innerPadding)
+            navController, AppScreen.DeviceConnection.name, Modifier.padding(innerPadding)
         ) {
-            composable(route = AppScreen.DeviceConnection.name){
+            composable(route = AppScreen.DeviceConnection.name) {
                 ConnectScreen(
                     onDeviceSelect = {
                         navController.navigate(AppScreen.Options.name)
-                    }
+                    },
+                    modifier = Modifier
+                        .fillMaxSize()
                 )
             }
-            composable(route = AppScreen.Options.name){
+            composable(route = AppScreen.Options.name) {
                 MenuScreen(
-                    navController = navController
+                    navController = navController,
+                    modifier = Modifier
+                        .fillMaxSize()
                 )
             }
-            composable(route = AppScreen.ViewData.name){
+            composable(route = AppScreen.ViewData.name) {
 
             }
-            composable(route = AppScreen.Configure.name){
+            composable(route = AppScreen.Configure.name) {
                 ConfigureScreen(
-
+                    modifier = Modifier
+                        .fillMaxSize()
                 )
             }
-            composable(route = AppScreen.NewPatient.name){
+            composable(route = AppScreen.NewPatient.name) {
                 NewPatientScreen(
-
+                    modifier = Modifier
+                        .fillMaxSize()
                 )
             }
         }

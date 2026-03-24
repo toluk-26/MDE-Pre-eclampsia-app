@@ -97,7 +97,7 @@ fun PreviewDeviceInfoBanner(){
 
 
 @Composable
-fun DeviceInfoBanner(devID: String, patientID: String, battery: Int){
+fun DeviceInfoBanner(devID: String, patientID: String, battery: Int?){
     val (batteryIcon, batteryDescription) = when (battery) {
         in 0..4 -> R.drawable.outline_battery_android_0_24 to R.string.battery_0_description
         in 5..20 -> R.drawable.outline_battery_android_frame_1_24 to R.string.battery_1_description
