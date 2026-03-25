@@ -12,9 +12,7 @@ class ConfigureViewModel : ViewModel() {
     val uiState: StateFlow<ConfigureData> = _uiState.asStateFlow()
 
     fun setPatientId(pid: String){
-        _uiState.update { currentState ->
-            currentState.copy(patientID = pid)
-        }
+        _uiState.update { it.copy(patientID = pid) }
     }
 
     fun setMinBloodPressure(value: String){
@@ -52,24 +50,16 @@ class ConfigureViewModel : ViewModel() {
     }
 
     private fun setMinDiastolic(value: Int?){
-        _uiState.update { currentState ->
-            currentState.copy(minDiastolic = value)
-        }
+        _uiState.update { it.copy(minDiastolic = value) }
     }
     private fun setMinSystolic(value: Int?){
-        _uiState.update { currentState ->
-            currentState.copy(minSystolic = value)
-        }
+        _uiState.update { it.copy(minSystolic = value) }
     }
     private fun setMaxDiastolic(value: Int?){
-        _uiState.update { currentState ->
-            currentState.copy(maxDiastolic = value)
-        }
+        _uiState.update { it.copy(maxDiastolic = value) }
     }
     private fun setMaxSystolic(value: Int?){
-        _uiState.update { currentState ->
-            currentState.copy(maxSystolic = value)
-        }
+        _uiState.update { it.copy(maxSystolic = value) }
     }
 
     private fun parseBloodPressure(input: String): Pair<Int?, Int?> {

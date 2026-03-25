@@ -39,6 +39,7 @@ fun ConnectScreen(
 ){
     val environment = current
     val state by vm.uiState.collectAsStateWithLifecycle()
+    LaunchedEffect(Unit) { vm.close() }
 
     // Scanning requires BLUETOOTH_SCAN permission, but
     // reading device name or bond state requires BLUETOOTH_CONNECT permission.

@@ -1,7 +1,6 @@
-package com.example.pre_eclampsiascreener.ble.parser
+package com.example.pre_eclampsiascreener.ble.parsers
 
 object BatteryLevelParser {
-
     fun parse(data: ByteArray): Int? =
         if (data.size == 1) data[0].toInt() and 0xFF else null
 }

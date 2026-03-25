@@ -48,7 +48,6 @@ class ScanViewModel(application: Application) : AndroidViewModel(application) {
             Log.d(TAG, "not scanning. exit")
             return
         }
-        bleManager.disconnect()
 
         // can scan
         scanJob = centralManager
@@ -124,6 +123,6 @@ class ScanViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun close() {
-        TODO("Not yet implemented")
+        bleManager.disconnect()
     }
 }

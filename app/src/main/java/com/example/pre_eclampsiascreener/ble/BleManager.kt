@@ -99,7 +99,7 @@ class BleManager(environment: NativeAndroidEnvironment, appScope: CoroutineScope
             ) { remoteService ->
                 profile.createManager()
                     .let {
-                        Log.d(TAG, "Service found, starting manager for ${profile}")
+                        Log.d(TAG, "Service found, starting manager for $profile")
                         it.observeServiceInteractions(remoteService, scope)
                         awaitCancellation()
                     }
