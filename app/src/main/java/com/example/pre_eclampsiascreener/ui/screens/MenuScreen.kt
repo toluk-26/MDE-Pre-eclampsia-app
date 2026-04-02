@@ -20,6 +20,7 @@ fun MenuScreen(
     navController: NavController,
     demoMode: Boolean = false
 ) {
+
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.Center,

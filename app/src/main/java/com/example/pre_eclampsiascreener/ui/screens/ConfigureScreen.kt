@@ -51,7 +51,7 @@ fun ConfigureScreen(
             text = "Thresholds"
         )
         Text("Blood Pressure (mmHg)")
-        Row() {
+        Row {
             Column {
                 Text("Minimum")
                 OutlinedTextField(
@@ -132,7 +132,7 @@ fun MinMaxRow(
 @Preview(showBackground = true)
 @Composable
 fun ConfigureScreenPreview() {
-    AppTheme() {
+    AppTheme {
         ConfigureScreen(Modifier.fillMaxSize())
     }
 }

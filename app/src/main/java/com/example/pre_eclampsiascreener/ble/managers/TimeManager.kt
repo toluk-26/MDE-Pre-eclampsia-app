@@ -5,8 +5,8 @@ package com.example.pre_eclampsiascreener.ble.managers
 import android.util.Log
 import com.example.pre_eclampsiascreener.ble.Profile
 import com.example.pre_eclampsiascreener.ble.ServiceManager
-import com.example.pre_eclampsiascreener.ble.parsers.TimezoneParser
-import com.example.pre_eclampsiascreener.ble.parsers.UnixTimeParser
+import com.example.pre_eclampsiascreener.ble.parsers.toTz
+import com.example.pre_eclampsiascreener.ble.parsers.toUnixTime
 import com.example.pre_eclampsiascreener.ble.repo.TimeRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.catch
@@ -20,14 +20,7 @@ import no.nordicsemi.kotlin.ble.core.WriteType
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-private const val TAG = "TimeManager"
-
 internal class TimeManager : ServiceManager {
-    private val UNIX_TIME_CHARACTERISTIC_UUID: Uuid =
-        Uuid.parse("043f0001-0ff5-45d1-9502-db9d40757da2")
-    private val TIMEZONE_CHARACTERISTIC_UUID: Uuid =
-        Uuid.parse("043f0002-0ff5-45d1-9502-db9d40757da2")
-
     override val profile: Profile = Profile.TIME
 
     override suspend fun observeServiceInteractions(
@@ -40,7 +33,7 @@ internal class TimeManager : ServiceManager {
         } ?: throw IllegalStateException("Time characteristic not found")
         try {
             unixTimeCharacteristic.subscribe()
-                .mapNotNull { UnixTimeParser.parse(it) }
+                .mapNotNull { it.toUnixTime() }
                 .onEach { TimeRepository.updateTime(it) }
                 .onCompletion { TimeRepository.clear() }
                 .catch { e ->
@@ -54,11 +47,14 @@ internal class TimeManager : ServiceManager {
         try {
             unixTimeCharacteristic
                 .read()
-                .let { Log.d(TAG, "read timeb: ${it.contentToString()}")
-                    UnixTimeParser.parse(it) }
+                .let {
+                    Log.d(TAG, "read timeb: ${it.contentToString()}")
+                    it.toUnixTime()
+                }
                 ?.also {
                     Log.d(TAG, "read time: $it")
-                    TimeRepository.updateTime(it) }
+                    TimeRepository.updateTime(it)
+                }
         } catch (e: Exception) {
             Log.e(TAG, "Read error: ${e.message}")
         }
@@ -69,7 +65,7 @@ internal class TimeManager : ServiceManager {
         try {
             timezoneCharacteristic
                 .subscribe()
-                .mapNotNull { TimezoneParser.parse(it) }
+                .mapNotNull { it.toTz() }
                 .onEach { TimeRepository.updateTimezone(it) }
                 .onCompletion { TimeRepository.clear() }
                 .catch { e ->
@@ -81,16 +77,24 @@ internal class TimeManager : ServiceManager {
         }
         try {
             timezoneCharacteristic
-                .read()
-                .let { TimezoneParser.parse(it) }
-                ?.also { Log.d(TAG, "read tz: $it")
-                    TimeRepository.updateTimezone(it) }
+            .read().toTz()
+                ?.also {
+                    Log.d(TAG, "read tz: $it")
+                    TimeRepository.updateTimezone(it)
+                }
         } catch (e: Exception) {
             Log.e(TAG, "Read error: ${e.message}")
         }
     }
 
     companion object {
+        const val TAG = "TimeManager"
+
+        private val UNIX_TIME_CHARACTERISTIC_UUID: Uuid =
+            Uuid.parse("043f0001-7bdb-4430-a1b9-e7d26fb2b981")
+        private val TIMEZONE_CHARACTERISTIC_UUID: Uuid =
+            Uuid.parse("043f0002-7bdb-4430-a1b9-e7d26fb2b981")
+
         private lateinit var unixTimeCharacteristic: RemoteCharacteristic
         private lateinit var timezoneCharacteristic: RemoteCharacteristic
 
@@ -103,6 +107,25 @@ internal class TimeManager : ServiceManager {
 
                     // — OR — Write WITH response (waits for ack, can throw on failure)
                     // myWriteCharacteristic.write(data, WriteType.WITH_RESPONSE)
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Write error: ${e.message}")
+            }
+//            finally {
+//                MyRepository.update(deviceId, value)
+//            }
+        }
+
+        suspend fun writeTz(value: Byte) {
+            val dataBytes = byteArrayOf(value)
+            try {
+                if (::timezoneCharacteristic.isInitialized) {
+                    // Write WITHOUT response (fire-and-forget)
+                    timezoneCharacteristic.write(dataBytes, WriteType.WITHOUT_RESPONSE)
+
+                    // — OR — Write WITH response (waits for ack, can throw on failure)
+                    // myWriteCharacteristic.write(data, WriteType.WITH_RESPONSE)
+                    Log.e(TAG, "Write: ${dataBytes.contentToString()}")
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Write error: ${e.message}")

@@ -20,6 +20,6 @@ object BatteryRepository {
     }
 
     fun clear() {
-        _data.update { it.copy(batteryLevel = null)}
+        _data.update { BatteryServiceData() }
     }
 }

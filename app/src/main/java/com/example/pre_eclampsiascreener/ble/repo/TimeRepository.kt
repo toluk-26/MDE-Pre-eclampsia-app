@@ -1,12 +1,18 @@
 package com.example.pre_eclampsiascreener.ble.repo
 
+import android.util.Log
 import com.example.pre_eclampsiascreener.ble.data.TimeServiceData
 import com.example.pre_eclampsiascreener.ble.managers.TimeManager
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 object TimeRepository {
+    private const val TAG = "TimeRepository"
+
     private val _data = MutableStateFlow(TimeServiceData())
+    val data: StateFlow<TimeServiceData> = _data.asStateFlow()
 
     fun updateTime(time: Long){
         _data.update { it.copy(unixTime = time) }
@@ -20,16 +26,11 @@ object TimeRepository {
         TimeManager.writeTime(time)
     }
 
-    suspend fun writeTimezone(tx: Int){
-
+    suspend fun writeTimezone(tz: Int){
+        TimeManager.writeTz(tz.toByte())
+        Log.d(TAG, "trying to print $tz -> ${tz.toByte()}")
     }
 
-    fun clear() {
-        _data.update {
-            it.copy(
-                unixTime = null,
-                timezone = null
-            )
-        }
-    }
+    fun clear() =
+        _data.update { TimeServiceData() }
 }

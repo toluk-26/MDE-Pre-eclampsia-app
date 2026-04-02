@@ -106,7 +106,7 @@ private fun ComposeBasicLineChart(
             )
         }
     )
-    val legendText = rememberTextComponent(
+    rememberTextComponent(
         TextStyle(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 12.sp

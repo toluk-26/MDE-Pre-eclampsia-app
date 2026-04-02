@@ -16,10 +16,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.example.pre_eclampsiascreener.ui.theme.AppTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.pre_eclampsiascreener.ble.repo.TimeRepository
 import com.example.pre_eclampsiascreener.ui.viewmodels.NewPatientViewModel
 
 @Composable
@@ -27,6 +29,10 @@ fun NewPatientScreen(
     modifier: Modifier = Modifier,
     patientUiState: NewPatientViewModel = viewModel()
 ) {
+    LaunchedEffect(Unit) {
+        TimeRepository.writeTimezone(-3)
+    }
+
     Scaffold(
         floatingActionButton = {
             ExtendedFloatingActionButton(
@@ -65,7 +71,7 @@ fun NewPatientScreenPreview() {
     val patientUiState: NewPatientViewModel = viewModel()
     patientUiState.setPatientId("P-XXXXXX")
 
-    AppTheme() {
+    AppTheme {
         NewPatientScreen(
             Modifier.fillMaxSize(),
             patientUiState
@@ -76,7 +82,7 @@ fun NewPatientScreenPreview() {
 @Preview(showBackground = true)
 @Composable
 fun NewPatientBlankPreview() {
-    AppTheme() {
+    AppTheme {
         NewPatientScreen(
             Modifier.fillMaxSize(),
         )
