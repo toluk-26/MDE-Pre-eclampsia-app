@@ -6,6 +6,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pre_eclampsiascreener.MainApplication
 import com.example.pre_eclampsiascreener.ble.BleManager
+import com.example.pre_eclampsiascreener.ble.ConnectState
 import com.example.pre_eclampsiascreener.data.ScannedDevice
 import com.example.pre_eclampsiascreener.ui.state.ScanUiState
 import kotlinx.coroutines.Job
@@ -32,8 +33,10 @@ class ScanViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(ScanUiState())
     val uiState: StateFlow<ScanUiState> = _uiState.asStateFlow()
+    val connectState: StateFlow<ConnectState> = bleManager.connectState
 
     private var scanJob: Job? = null
+
 
     init {
         centralManager.state
@@ -45,7 +48,7 @@ class ScanViewModel(application: Application) : AndroidViewModel(application) {
 
     fun startScan() {
         if (_uiState.value.isScanning) {
-            Log.d(TAG, "not scanning. exit")
+            Log.d(TAG, "is scanning. exit")
             return
         }
 
@@ -119,10 +122,19 @@ class ScanViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun onPeripheralSelected(peripheral: Peripheral) {
+        Log.d(TAG, "selected periph")
+        _uiState.update { it.copy(selectedPeripheral = peripheral) }
         bleManager.connect(peripheral)
+    }
+
+    fun resetConnectionState() {
+        Log.d(TAG, "unselected periph")
+        _uiState.update { it.copy(selectedPeripheral = null) }
     }
 
     fun close() {
         bleManager.disconnect()
+        resetConnectionState()
+        bleManager.resetState()
     }
 }

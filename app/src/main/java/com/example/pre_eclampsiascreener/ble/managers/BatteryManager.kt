@@ -3,6 +3,7 @@ package com.example.pre_eclampsiascreener.ble.managers
 import android.util.Log
 import com.example.pre_eclampsiascreener.ble.Profile
 import com.example.pre_eclampsiascreener.ble.ServiceManager
+import com.example.pre_eclampsiascreener.ble.ServiceManager.Companion.TAG_DATA
 import com.example.pre_eclampsiascreener.ble.repo.BatteryRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.catch
@@ -11,7 +12,6 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import no.nordicsemi.kotlin.ble.client.RemoteService
-import no.nordicsemi.kotlin.ble.core.CharacteristicProperty
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -33,32 +33,30 @@ class BatteryManager : ServiceManager {
         val batteryChar = remoteService.characteristics
             .firstOrNull { it.uuid == BATTERY_LEVEL_CHARACTERISTIC_UUID }
 
-        batteryChar?.let { characteristic ->
-            // If the characteristic supports READ, read the initial value
-            if (characteristic.properties.contains(CharacteristicProperty.READ)) {
-                try {
-                    characteristic.read()[0].toInt()
-                        .let { BatteryRepository.updateBatteryLevel(it) }
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error reading battery level: ${e.message}")
+        try {
+            batteryChar?.read()[0]?.toInt()
+                .let {
+                    Log.d(TAG_DATA, "Battery Level: $it")
+                    BatteryRepository.updateBatteryLevel(it ?: -1)
                 }
-            }
-            // Check if the characteristic supports NOTIFY or INDICATE property
-            if (characteristic.properties.contains(CharacteristicProperty.NOTIFY)
-                || characteristic.properties.contains(CharacteristicProperty.INDICATE)
-            ) {
-                // Start subscription for battery level updates
-                characteristic.subscribe()
-                    .mapNotNull { it[0].toInt() }
-                    .onEach {  BatteryRepository.updateBatteryLevel(it) }
-                    .onCompletion {
-                        BatteryRepository.clear()
-                    }
-                    .catch { e ->
-                        Log.e(TAG, e.toString())
-                    }
-                    .launchIn(scope)
-            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error reading battery level: ${e.message}")
+        }
+
+        try {
+            batteryChar?.subscribe()
+                ?.mapNotNull { it[0].toInt() }
+                ?.onEach {
+                    Log.d(TAG_DATA, "Battery Level: $it")
+                    BatteryRepository.updateBatteryLevel(it)
+                }
+                ?.onCompletion { BatteryRepository.clear() }
+                ?.catch { e ->
+                    Log.e(TAG, e.toString())
+                }
+                ?.launchIn(scope)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error subscribing to battery level: ${e.message}")
         }
     }
 }

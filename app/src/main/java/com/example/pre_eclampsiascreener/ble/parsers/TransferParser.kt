@@ -13,21 +13,22 @@ private const val SENSOR_SIZE = 4
 
 fun ByteArray.parseTransferData(): TransferServiceData? {
     val header: TransferHeaderData = this.copyOfRange(0, HEADER_SIZE).toHeader() ?: return null
+    val payload: ByteArray = this.copyOfRange(HEADER_SIZE, size)
 
     return when (header.type) {
         PayloadType.SENSOR -> TransferServiceData(
             header = header,
-            payload = Payload.Sensor(this.toSensorData() ?: return null)
+            payload = Payload.Sensor(payload.toSensorData() ?: return null)
         )
 
         else -> TransferServiceData(
             header = header,
-            payload = Payload.Debug(this.toString(Charsets.UTF_8))
+            payload = Payload.Debug(payload.toString(Charsets.UTF_8))
         )
     }
 }
 
-private fun ByteArray.toHeader(): TransferHeaderData? {
+fun ByteArray.toHeader(): TransferHeaderData? {
     if (size != HEADER_SIZE) return null
     val buf = ByteBuffer.wrap(this).order(ByteOrder.LITTLE_ENDIAN)
     return TransferHeaderData(
@@ -37,13 +38,13 @@ private fun ByteArray.toHeader(): TransferHeaderData? {
     )
 }
 
-private fun Byte.toPayloadType(): PayloadType =
+fun Byte.toPayloadType(): PayloadType =
     when (this.toInt()) {
         0 -> PayloadType.SENSOR
         else -> PayloadType.DEBUG
     }
 
-private fun ByteArray.toSensorData(): SensorData? {
+fun ByteArray.toSensorData(): SensorData? {
     if (size < SENSOR_SIZE) return null
     val buf = ByteBuffer.wrap(this).order(ByteOrder.LITTLE_ENDIAN)
     return SensorData(
@@ -55,6 +56,11 @@ private fun ByteArray.toSensorData(): SensorData? {
 }
 
 fun ByteArray.toInt(): Int?{
-    if (size != 4 ) return null
+    if (size != Int.SIZE_BYTES ) return null
     return ByteBuffer.wrap(this).order(ByteOrder.LITTLE_ENDIAN).int
+}
+
+fun ByteArray.toUInt(): UInt?{
+    if (size != UInt.SIZE_BYTES ) return null
+    return ByteBuffer.wrap(this).order(ByteOrder.LITTLE_ENDIAN).int.toUInt()
 }

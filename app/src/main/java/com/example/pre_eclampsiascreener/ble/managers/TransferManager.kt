@@ -3,6 +3,7 @@ package com.example.pre_eclampsiascreener.ble.managers
 import android.util.Log
 import com.example.pre_eclampsiascreener.ble.Profile
 import com.example.pre_eclampsiascreener.ble.ServiceManager
+import com.example.pre_eclampsiascreener.ble.ServiceManager.Companion.TAG_DATA
 import com.example.pre_eclampsiascreener.ble.parsers.parseTransferData
 import com.example.pre_eclampsiascreener.ble.parsers.toInt
 import com.example.pre_eclampsiascreener.ble.repo.TransferRepository
@@ -14,57 +15,50 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import no.nordicsemi.kotlin.ble.client.RemoteCharacteristic
 import no.nordicsemi.kotlin.ble.client.RemoteService
-import no.nordicsemi.kotlin.ble.core.WriteType
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 @OptIn(ExperimentalUuidApi::class)
 class TransferManager : ServiceManager {
     override val profile: Profile = Profile.TRANSFER
+
     override suspend fun observeServiceInteractions(
         remoteService: RemoteService,
         scope: CoroutineScope
     ) {
+        sscope = scope
         dataCharacteristic = remoteService.characteristics.firstOrNull {
             it.uuid == DATA_CHARACTERISTIC_UUID
         } ?: throw IllegalStateException("Data characteristic not found")
 
         try {
-            dataCharacteristic.subscribe()
-                .mapNotNull { it.parseTransferData() }
-                .onEach { TransferRepository.add(it) }
-                .onCompletion { TransferRepository.clear() }
-                .catch { e ->
-                    e.printStackTrace()
-                    Log.e(TAG, e.toString())
-                }
-                .launchIn(scope)
-        } catch (e: Exception){
-            Log.e(TAG, "Error subscribing to transfer: ${e.toString()}")
-        }
-
-        try {
             remoteService.characteristics
-                .firstOrNull { it.uuid == DATA_SIZE_CHARACTERISTIC_UUID}
+                .firstOrNull { it.uuid == DATA_SIZE_CHARACTERISTIC_UUID }
                 ?.subscribe()
                 ?.mapNotNull { it.toInt() }
-                ?.onEach { TransferRepository.checkSize(it) }
+                ?.onEach { size ->
+                    Log.d(TAG_DATA, "Transfer Size: $size")
+                    // Explicitly write 0x0000 to the CCCD to tell the device to stop notifying
+                    dataCharacteristic.descriptors
+                        .firstOrNull { it.uuid.toString().lowercase() == "00002902-0000-1000-8000-00805f9b34fb" }
+                        ?.write(byteArrayOf(0x00, 0x00))
+                    // validate length
+                    TransferRepository.checkSize(size)
+                }
                 ?.onCompletion { TransferRepository.clear() }
                 ?.catch { e ->
                     e.printStackTrace()
                     Log.e(TAG, e.toString())
                 }
                 ?.launchIn(scope)
-        } catch (e: Exception){
+        } catch (e: Exception) {
             Log.e(TAG, "Error subscribing to transfer: ${e.toString()}")
         }
 
-        try{
-            triggerCharacteristic = remoteService.characteristics.firstOrNull {
-                it.uuid == TRIGGER_CHARACTERISTIC_UUID
-            } ?: throw IllegalStateException("Data characteristic not found")
-        } catch (e: Exception){
-            Log.e(TAG, "Error finding Transfer Trigger Characteristic: ${e.toString()}")
+        try {
+            triggerTransfer()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error subscribing to transfer: ${e.toString()}")
         }
     }
 
@@ -81,13 +75,28 @@ class TransferManager : ServiceManager {
         private lateinit var triggerCharacteristic: RemoteCharacteristic
         private lateinit var dataCharacteristic: RemoteCharacteristic
 
-        suspend fun triggerTransfer() {
+        private lateinit var sscope: CoroutineScope
+
+        fun triggerTransfer() {
+            if (!::dataCharacteristic.isInitialized) return
             try {
-                if (::triggerCharacteristic.isInitialized and ::dataCharacteristic.isInitialized) {
-                    triggerCharacteristic.write(byteArrayOf(1), WriteType.WITHOUT_RESPONSE)
-                }
+                dataCharacteristic.subscribe()
+                    .mapNotNull {
+                        Log.d(TAG, "Incoming Size: ${it.size}")
+                        it.parseTransferData()
+                    }
+                    .onEach {
+                        Log.d("BleData", "Type:${it.header.type} Payload: ${it.payload}")
+                        TransferRepository.add(it)
+                    }
+                    .onCompletion { TransferRepository.clear() }
+                    .catch { e ->
+                        e.printStackTrace()
+                        Log.e(TAG, e.toString())
+                    }
+                    .launchIn(sscope)
             } catch (e: Exception) {
-                Log.e(TimeManager.TAG, "Write error: ${e.message}")
+                Log.e(TAG, "triggerTransfer error: ${e.message}")
             }
         }
     }

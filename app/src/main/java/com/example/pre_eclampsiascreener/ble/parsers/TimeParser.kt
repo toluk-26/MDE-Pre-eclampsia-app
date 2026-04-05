@@ -11,3 +11,6 @@ fun ByteArray.toUnixTime(): Long? =
     else return ByteBuffer.wrap(this)
         .order(ByteOrder.LITTLE_ENDIAN)
         .int.toLong() and 0xFFFFFFFF // Convert unsigned int to long
+
+fun Long.toByteArray(): ByteArray =
+    ByteBuffer.allocate(Long.SIZE_BYTES).putLong(this).array()

@@ -3,30 +3,24 @@ package com.example.pre_eclampsiascreener.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.pre_eclampsiascreener.data.ConsoleItem
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
-@Preview
-@Composable
-fun ConsoleCardPreview() {
-    ConsoleCard(ConsoleItem(1771558313, 0))
-
-}
-
 @OptIn(ExperimentalTime::class)
 @Composable
-fun ConsoleCard(entry: ConsoleItem) {
-    val instant = Instant.fromEpochSeconds(entry.unixTime)
+fun ConsoleCard(
+    time: Long,
+    code: Int = 0,
+    msg: String?,
+) {
+    val instant = Instant.fromEpochSeconds(time)
     val utc = instant.toLocalDateTime(TimeZone.UTC)
     Row(
         modifier = Modifier
@@ -34,33 +28,12 @@ fun ConsoleCard(entry: ConsoleItem) {
             .background(Color.Black)
     ) {
         Text("$utc: ",color = Color.White)
-        Text(entry.msgCode.toString(), color = Color.White) // TODO: implement json
-    }
-}
-
-@Composable
-fun ConsoleList(consoleEntries: List<ConsoleItem>, modifier: Modifier = Modifier){
-    LazyColumn(modifier = modifier) {
-        items(consoleEntries){ entry ->
-            ConsoleCard(entry)
-        }
+        Text(msg ?: "NO MSG", color = Color.White) // TODO: implement json
     }
 }
 
 @Preview
 @Composable
-fun ConsoleListPreview() {
-    val consoleItems = listOf(
-        ConsoleItem(1771558313, 0),
-        ConsoleItem(1771558314, 0),
-        ConsoleItem(1771558315, 0),
-        ConsoleItem(1771558316, 0),
-    )
-
-    ConsoleList(
-        consoleItems,
-        Modifier
-            .fillMaxWidth()
-    )
-
+fun ConsoleCardPreview() {
+    ConsoleCard(1771558313, -1, "0")
 }

@@ -10,6 +10,9 @@ object DeviceInfoRepository {
     private val _data = MutableStateFlow(DeviceInformationServiceData())
     val data: StateFlow<DeviceInformationServiceData> = _data.asStateFlow()
 
+    private val _deviceName = MutableStateFlow(String())
+    val deviceName: StateFlow<String> = _deviceName.asStateFlow()
+
     fun setModelNum(modelNum: String?) =
             _data.update { it.copy(modelNumber = modelNum)}
 
@@ -27,6 +30,9 @@ object DeviceInfoRepository {
 
     fun setManufacturer(manufacturer: String?) =
         _data.update { it.copy(manufacturer = manufacturer)}
+
+    fun setDeviceName(name: String?) =
+        _deviceName.update { name ?: "Unknown"}
 
     fun clear() =
         _data.update { DeviceInformationServiceData() }

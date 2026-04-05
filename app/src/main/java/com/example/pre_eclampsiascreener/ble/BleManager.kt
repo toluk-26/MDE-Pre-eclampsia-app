@@ -1,15 +1,16 @@
 package com.example.pre_eclampsiascreener.ble
 
 import android.util.Log
-import com.example.pre_eclampsiascreener.ui.state.ScanUiState
+import com.example.pre_eclampsiascreener.ble.repo.ConfigRepository
+import com.example.pre_eclampsiascreener.ble.repo.DeviceInfoRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import no.nordicsemi.kotlin.ble.client.android.CentralManager
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
@@ -21,23 +22,15 @@ import kotlin.uuid.ExperimentalUuidApi
 
 private const val TAG = "BleManager"
 
-sealed class ConnectionState {
-    data object Disconnected : ConnectionState()
-    data class Connecting(val peripheral: Peripheral) : ConnectionState()
-    data class Connected(val peripheral: Peripheral) : ConnectionState()
-    data class Error(val peripheral: Peripheral?, val message: String) : ConnectionState()
-}
-
 class BleManager(environment: NativeAndroidEnvironment, appScope: CoroutineScope) {
     val centralManager: CentralManager =
         CentralManager.native(environment, appScope)
 
-    private val _uiState = MutableStateFlow(ScanUiState())
-    private val uiState: StateFlow<ScanUiState> = _uiState.asStateFlow()
+    private val _connectState = MutableStateFlow<ConnectState>(ConnectState.Idle)
+    val connectState: StateFlow<ConnectState> = _connectState.asStateFlow()
 
     private var connectedPeripheral: Peripheral? = null
     private var connectScope: CoroutineScope? = null
-    private var connectJob: Job? = null
 
     fun close() {
         connectScope?.cancel()
@@ -51,6 +44,8 @@ class BleManager(environment: NativeAndroidEnvironment, appScope: CoroutineScope
             .apply {
                 launch {
                     try {
+                        _connectState.value = ConnectState.Connecting
+                        Log.d(TAG, "connect state set to connecting")
                         // register profiles
                         registerServices(peripheral, scope)
 
@@ -63,12 +58,20 @@ class BleManager(environment: NativeAndroidEnvironment, appScope: CoroutineScope
                                 retry = 2,
                                 retryDelay = 1.seconds,
                                 Phy.PHY_LE_2M,
+                                automaticallyRequestHighestMtu = true
                             )
                         )
-                        Log.d(TAG, "Connected to ${peripheral.name}!")
+                        DeviceInfoRepository.setDeviceName(peripheral.name)
                         connectedPeripheral = peripheral
+                        Log.d(TAG, "Connected to ${peripheral.name}!")
+
+                        ConfigRepository.data.first{it.pid != null}
+                        _connectState.value = ConnectState.Connected
+                        Log.d(TAG, "connect state set to connected")
                     } catch (e: Exception) {
                         Log.e(TAG, "Connect failed, $e")
+                        _connectState.value = ConnectState.Failed
+                        Log.d(TAG, "connect state set to fail")
                         connectScope?.cancel()
                         connectScope = null
                     }
@@ -83,6 +86,11 @@ class BleManager(environment: NativeAndroidEnvironment, appScope: CoroutineScope
                 Log.d(TAG, "Disconnected from ${connectedPeripheral?.name}!")
             } catch (e: Exception) {
                 Log.e(TAG, "Disconnect failed, $e")
+            } finally {
+                _connectState.value = ConnectState.Idle
+                Log.d(TAG, "connect state set to disconnect")
+                connectedPeripheral = null
+                Profile.entries.forEach { it.clearRepository() }
             }
         }
     }
@@ -106,5 +114,10 @@ class BleManager(environment: NativeAndroidEnvironment, appScope: CoroutineScope
 
             }
         }
+    }
+
+    fun resetState() {
+        _connectState.value = ConnectState.Idle
+        Log.d(TAG, "connect state set to idle")
     }
 }

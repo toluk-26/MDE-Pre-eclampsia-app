@@ -5,6 +5,8 @@ package com.example.pre_eclampsiascreener.ble.managers
 import android.util.Log
 import com.example.pre_eclampsiascreener.ble.Profile
 import com.example.pre_eclampsiascreener.ble.ServiceManager
+import com.example.pre_eclampsiascreener.ble.ServiceManager.Companion.TAG_DATA
+import com.example.pre_eclampsiascreener.ble.parsers.toByteArray
 import com.example.pre_eclampsiascreener.ble.parsers.toTz
 import com.example.pre_eclampsiascreener.ble.parsers.toUnixTime
 import com.example.pre_eclampsiascreener.ble.repo.TimeRepository
@@ -46,13 +48,9 @@ internal class TimeManager : ServiceManager {
         }
         try {
             unixTimeCharacteristic
-                .read()
-                .let {
-                    Log.d(TAG, "read timeb: ${it.contentToString()}")
-                    it.toUnixTime()
-                }
+        .read().toUnixTime()
                 ?.also {
-                    Log.d(TAG, "read time: $it")
+                    Log.d(TAG_DATA, "Device Time: $it")
                     TimeRepository.updateTime(it)
                 }
         } catch (e: Exception) {
@@ -66,7 +64,10 @@ internal class TimeManager : ServiceManager {
             timezoneCharacteristic
                 .subscribe()
                 .mapNotNull { it.toTz() }
-                .onEach { TimeRepository.updateTimezone(it) }
+                .onEach {
+                    Log.d(TAG_DATA, "Device Timezone: $it")
+                    TimeRepository.updateTimezone(it)
+                }
                 .onCompletion { TimeRepository.clear() }
                 .catch { e ->
                     Log.e(TAG, "Subscribe error: ${e.message}")
@@ -79,7 +80,7 @@ internal class TimeManager : ServiceManager {
             timezoneCharacteristic
             .read().toTz()
                 ?.also {
-                    Log.d(TAG, "read tz: $it")
+                    Log.d(TAG_DATA, "Device Timezone: $it")
                     TimeRepository.updateTimezone(it)
                 }
         } catch (e: Exception) {
@@ -99,21 +100,13 @@ internal class TimeManager : ServiceManager {
         private lateinit var timezoneCharacteristic: RemoteCharacteristic
 
         suspend fun writeTime(value: Long) {
-            val dataBytes = value.toString().toByteArray()
             try {
                 if (::unixTimeCharacteristic.isInitialized) {
-                    // Write WITHOUT response (fire-and-forget)
-                    unixTimeCharacteristic.write(dataBytes, WriteType.WITHOUT_RESPONSE)
-
-                    // — OR — Write WITH response (waits for ack, can throw on failure)
-                    // myWriteCharacteristic.write(data, WriteType.WITH_RESPONSE)
+                    unixTimeCharacteristic.write(value.toByteArray(), WriteType.WITH_RESPONSE)
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Write error: ${e.message}")
             }
-//            finally {
-//                MyRepository.update(deviceId, value)
-//            }
         }
 
         suspend fun writeTz(value: Byte) {

@@ -3,6 +3,7 @@ package com.example.pre_eclampsiascreener.ble.managers
 import android.util.Log
 import com.example.pre_eclampsiascreener.ble.Profile
 import com.example.pre_eclampsiascreener.ble.ServiceManager
+import com.example.pre_eclampsiascreener.ble.ServiceManager.Companion.TAG_DATA
 import com.example.pre_eclampsiascreener.ble.repo.DeviceInfoRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -34,7 +35,7 @@ class DeviceInfoManager : ServiceManager{
                     .firstOrNull { it.uuid == MODEL_NUMBER_CHARACTERISTIC_UUID }
                     ?.read()?.toString(Charsets.UTF_8)
                     .apply {
-                        Log.d(TAG, "Model: $this")
+                        Log.d(TAG_DATA, "Model: $this")
                         DeviceInfoRepository.setModelNum(this)
                     }
             } catch (e: Exception) {
@@ -46,7 +47,7 @@ class DeviceInfoManager : ServiceManager{
                     .firstOrNull { it.uuid == SERIAL_NUMBER_CHARACTERISTIC_UUID }
                     ?.read()?.toString(Charsets.UTF_8)
                     .apply {
-                        Log.d(TAG, "Serial: $this")
+                        Log.d(TAG_DATA, "Serial: $this")
                         DeviceInfoRepository.setSerialNum(this)
                     }
             } catch (e: Exception) {
@@ -58,7 +59,7 @@ class DeviceInfoManager : ServiceManager{
                     .firstOrNull { it.uuid == FIRMWARE_REVISION_CHARACTERISTIC_UUID }
                     ?.read()?.toString(Charsets.UTF_8)
                     .apply {
-                        Log.d(TAG, "Firmware: $this")
+                        Log.d(TAG_DATA, "Firmware: $this")
                         DeviceInfoRepository.setFirmwareRev(this)
                     }
             } catch (e: Exception) {
@@ -70,7 +71,7 @@ class DeviceInfoManager : ServiceManager{
                     .firstOrNull { it.uuid == HARDWARE_REVISION_CHARACTERISTIC_UUIDD }
                     ?.read()?.toString(Charsets.UTF_8)
                     .apply {
-                        Log.d(TAG, "Hardware: $this")
+                        Log.d(TAG_DATA, "Hardware: $this")
                         DeviceInfoRepository.setHardwareRev(this)
                     }
             } catch (e: Exception) {
@@ -82,7 +83,7 @@ class DeviceInfoManager : ServiceManager{
                     .firstOrNull { it.uuid == SOFTWARE_REVISION_CHARACTERISTIC_UUID }
                     ?.read()?.toString(Charsets.UTF_8)
                     .apply {
-                        Log.d(TAG, "Software: $this")
+                        Log.d(TAG_DATA, "Software: $this")
                         DeviceInfoRepository.setSoftwareRev(this)
                     }
             } catch (e: Exception) {
@@ -94,7 +95,7 @@ class DeviceInfoManager : ServiceManager{
                     .firstOrNull { it.uuid == MANUFACTERER_NAME_CHARACTERISTIC_UUID }
                     ?.read()?.toString(Charsets.UTF_8)
                     .apply {
-                        Log.d(TAG, "Manufacturer: $this")
+                        Log.d(TAG_DATA, "Manufacturer: $this")
                         DeviceInfoRepository.setManufacturer(this)
                     }
             } catch (e: Exception) {

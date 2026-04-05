@@ -15,17 +15,15 @@ hello every one! yes, im lazy chud. the app is very behind
 
 # services
 - config
+  - demo mode
+  - new patient ready flag
   - pid
-  - min diastolic
-  - max diastolic
-  - min systolic
-  - max systolic
+  - diastolic max/min
+  - systolic max/min
   - diastolic coefficient m
   - diastolic coefficient b
   - systolic coefficient m
   - systolic coefficient b
-  - new patient ready flag
-  - demo mode
 - time
   - unix time
   - timezone

@@ -11,10 +11,6 @@ object BatteryRepository {
     private val _data = MutableStateFlow(BatteryServiceData())
     val data: StateFlow<BatteryServiceData> = _data.asStateFlow()
 
-    fun getData(): Flow<BatteryServiceData> {
-        return MutableStateFlow(BatteryServiceData())
-    }
-
     fun updateBatteryLevel(data: Int) {
         _data.update { it.copy(batteryLevel = data)}
     }

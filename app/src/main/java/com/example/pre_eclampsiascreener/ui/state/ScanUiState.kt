@@ -8,5 +8,6 @@ data class ScanUiState(
     val bluetoothState: Manager.State = Manager.State.POWERED_OFF,
     val isScanning: Boolean = false,
     val peripherals: Map<Peripheral, ScannedDevice> = emptyMap(),
+    val selectedPeripheral: Peripheral? = null,
     val error: String? = null,
 )

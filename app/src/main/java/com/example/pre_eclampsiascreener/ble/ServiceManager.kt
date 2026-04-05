@@ -11,4 +11,8 @@ interface ServiceManager {
         remoteService: RemoteService,
         scope: CoroutineScope
     )
+
+    companion object{
+        const val TAG_DATA = "BleData"
+    }
 }

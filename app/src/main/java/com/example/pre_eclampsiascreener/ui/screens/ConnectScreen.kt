@@ -4,6 +4,7 @@ import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.content.Intent
 import android.os.Build
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.padding
@@ -24,23 +25,26 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.pre_eclampsiascreener.ble.ConnectState
 import com.example.pre_eclampsiascreener.ui.components.DeviceInfoCard
 import com.example.pre_eclampsiascreener.ui.viewmodels.ScanViewModel
-import no.nordicsemi.kotlin.ble.client.android.Peripheral
+import kotlinx.coroutines.delay
 import no.nordicsemi.kotlin.ble.core.Manager
 import no.nordicsemi.kotlin.ble.core.android.AndroidEnvironment
 import no.nordicsemi.kotlin.ble.environment.android.compose.LocalEnvironmentOwner.current
+import androidx.compose.runtime.collectAsState
 
 @Composable
 fun ConnectScreen(
-    onDeviceSelect: (Peripheral) -> Unit,
+    onSuccess: () -> Unit,
     modifier: Modifier = Modifier,
     vm: ScanViewModel = viewModel(),
 ){
     val environment = current
     val state by vm.uiState.collectAsStateWithLifecycle()
-    LaunchedEffect(Unit) { vm.close() }
+    val connectState by vm.connectState.collectAsStateWithLifecycle()
 
+    // permissions
     // Scanning requires BLUETOOTH_SCAN permission, but
     // reading device name or bond state requires BLUETOOTH_CONNECT permission.
     val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -83,21 +87,40 @@ fun ConnectScreen(
         contract = ActivityResultContracts.StartActivityForResult()
     ){}
 
+    // on screen start
     LaunchedEffect(permissionGranted) {
         if (permissionGranted) {
+            vm.close()
             vm.startScan()
         } else {
             vm.stopScan()
         }
     }
 
+    // on screen close
     DisposableEffect(Unit) {
         onDispose {
-            vm.stopScan() // add a fun stopScan() { scanJob?.cancel() }
+            vm.stopScan()
+            vm.resetConnectionState()
+        }
+    }
+
+    // on connectState change
+    LaunchedEffect(connectState) {
+        when (connectState) {
+            is ConnectState.Connected -> {
+                onSuccess()
+            }
+            is ConnectState.Failed -> {
+                delay(2000)
+                vm.resetConnectionState()
+            }
+            else -> {}
         }
     }
 
     when {
+        // bluetooth is off
         state.bluetoothState != Manager.State.POWERED_ON -> {
             Button(onClick = {
                 enableBluetoothLauncher.launch(
@@ -108,12 +131,14 @@ fun ConnectScreen(
             }
         }
 
+        // bluetooth needs permissions
         !permissionGranted -> {
             Button(onClick = { launcher.launch(permissions) }) {
                 Text("Grant required permissions")
             }
         }
 
+        // regular business
         else -> {
             // Both Bluetooth and Location permissions are granted.
             // We can now start scanning.
@@ -132,15 +157,16 @@ fun ConnectScreen(
                         .sortedByDescending { it.rssi }
                         .toList()
                     ) { device ->
+                        val isThisDeviceSelected = vm.uiState.collectAsState().value.selectedPeripheral == device.peripheral
+                        val cs = if (isThisDeviceSelected) connectState else ConnectState.Idle
                         DeviceInfoCard(
                             device.peripheral.name,
                             device.peripheral.address,
                             device.rssi,
-                            onDeviceClick = {
-                                vm.onPeripheralSelected(device.peripheral)
-                                onDeviceSelect(device.peripheral)
-                            }
-                        )
+                            cs
+                        ) {
+                            vm.onPeripheralSelected(device.peripheral)
+                        }
                         HorizontalDivider(thickness = 1.dp, color = Color.Gray)
                     }
                 }

@@ -16,11 +16,14 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.pre_eclampsiascreener.ble.repo.BatteryRepository
+import com.example.pre_eclampsiascreener.ble.repo.ConfigRepository
+import com.example.pre_eclampsiascreener.ble.repo.DeviceInfoRepository
 import com.example.pre_eclampsiascreener.ui.AppViewModel
 import com.example.pre_eclampsiascreener.ui.components.Banner
 import com.example.pre_eclampsiascreener.ui.components.DeviceInfoBanner
 import com.example.pre_eclampsiascreener.ui.screens.ConfigureScreen
 import com.example.pre_eclampsiascreener.ui.screens.ConnectScreen
+import com.example.pre_eclampsiascreener.ui.screens.ConsoleScreen
 import com.example.pre_eclampsiascreener.ui.screens.MenuScreen
 import com.example.pre_eclampsiascreener.ui.screens.NewPatientScreen
 import com.example.pre_eclampsiascreener.ui.theme.AppTheme
@@ -52,6 +55,8 @@ fun PESApp(
     )
 
     val batteryLevel by BatteryRepository.data.collectAsState()
+    val config by ConfigRepository.data.collectAsState()
+    val devInfo by DeviceInfoRepository.deviceName.collectAsState()
 
     Scaffold(
         topBar = {
@@ -59,7 +64,7 @@ fun PESApp(
                 Banner {}
                 if (currentScreen != AppScreen.DeviceConnection) {
                     DeviceInfoBanner(
-                        "PES-XXXX", "0000001", batteryLevel.batteryLevel
+                        devInfo, config.pid.toString(), batteryLevel.batteryLevel
                     )
                 }
             }
@@ -72,7 +77,7 @@ fun PESApp(
         ) {
             composable(route = AppScreen.DeviceConnection.name) {
                 ConnectScreen(
-                    onDeviceSelect = {
+                    onSuccess = {
                         navController.navigate(AppScreen.Options.name)
                     },
                     modifier = Modifier
@@ -83,7 +88,8 @@ fun PESApp(
                 MenuScreen(
                     navController = navController,
                     modifier = Modifier
-                        .fillMaxSize()
+                        .fillMaxSize(),
+                    demoMode = config.demoMode
                 )
             }
             composable(route = AppScreen.ViewData.name) {
@@ -99,6 +105,11 @@ fun PESApp(
                 NewPatientScreen(
                     modifier = Modifier
                         .fillMaxSize()
+                )
+            }
+            composable(route = AppScreen.Console.name) {
+                ConsoleScreen(
+
                 )
             }
         }
