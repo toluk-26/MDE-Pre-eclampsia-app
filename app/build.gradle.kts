@@ -56,6 +56,7 @@ dependencies {
     implementation(libs.ble.client.android)
     implementation(libs.ble.environment.android)
     implementation(libs.ble.environment.compose)
+    implementation(libs.androidx.material3)
 
     testImplementation(libs.junit)
 

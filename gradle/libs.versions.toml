@@ -7,15 +7,16 @@ junitVersion = "1.3.0"
 espressoCore = "3.7.0"
 lifecycleRuntimeKtx = "2.10.0"
 activityCompose = "1.13.0"
-composeBom = "2026.03.00"
+composeBom = "2026.03.01"
 materialIconsExtended = "1.7.8"
 kotlinxDatetime = "0.7.1"
-uiTextGoogleFonts = "1.10.5"
+uiTextGoogleFonts = "1.10.6"
 navigationCompose = "2.9.7"
 kotlinBle = "2.0.0-alpha17"
 lifecycleService = "2.10.0"
-foundationLayout = "1.10.5"
-vico = "3.0.3"
+foundationLayout = "1.10.6"
+vico = "3.1.0"
+material3 = "1.4.0"
 
 
 [libraries]
@@ -44,6 +45,7 @@ client-core = { group = "no.nordicsemi.kotlin.ble", name = "client-core", versio
 ble-client-android = { group = "no.nordicsemi.kotlin.ble", name = "client-android", version.ref = "kotlinBle" }
 ble-environment-android = { group = "no.nordicsemi.kotlin.ble", name = "environment-android", version.ref = "kotlinBle" }
 ble-environment-compose = { group = "no.nordicsemi.kotlin.ble", name = "environment-android-compose", version.ref = "kotlinBle" }
+androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

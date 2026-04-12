@@ -55,11 +55,11 @@ class TransferManager : ServiceManager {
             Log.e(TAG, "Error subscribing to transfer: ${e.toString()}")
         }
 
-        try {
-            triggerTransfer()
-        } catch (e: Exception) {
-            Log.e(TAG, "Error subscribing to transfer: ${e.toString()}")
-        }
+//        try {
+//            triggerTransfer()
+//        } catch (e: Exception) {
+//            Log.e(TAG, "Error subscribing to transfer: ${e.toString()}")
+//        }
     }
 
     companion object {

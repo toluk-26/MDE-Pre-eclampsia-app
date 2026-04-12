@@ -5,4 +5,8 @@
     <color name="purple_700">#FF3700B3</color>
     <color name="teal_200">#FF03DAC5</color>
     <color name="teal_700">#FF018786</color>
+    <color name="systolic">#FFE53935</color>
+    <color name="diastolic">#FF1E88E5</color>
+    <color name="systolic_band">#22E53935</color>
+    <color name="diastolic_band">#221E88E5</color>
 </resources>

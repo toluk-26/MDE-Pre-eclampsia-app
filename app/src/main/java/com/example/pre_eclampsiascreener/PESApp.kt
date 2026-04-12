@@ -26,6 +26,7 @@ import com.example.pre_eclampsiascreener.ui.screens.ConnectScreen
 import com.example.pre_eclampsiascreener.ui.screens.ConsoleScreen
 import com.example.pre_eclampsiascreener.ui.screens.MenuScreen
 import com.example.pre_eclampsiascreener.ui.screens.NewPatientScreen
+import com.example.pre_eclampsiascreener.ui.screens.ViewDataScreen
 import com.example.pre_eclampsiascreener.ui.theme.AppTheme
 
 enum class AppScreen {
@@ -93,7 +94,12 @@ fun PESApp(
                 )
             }
             composable(route = AppScreen.ViewData.name) {
+                ViewDataScreen(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    navController,
 
+                )
             }
             composable(route = AppScreen.Configure.name) {
                 ConfigureScreen(
