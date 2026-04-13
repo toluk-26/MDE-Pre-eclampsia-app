@@ -24,6 +24,7 @@ import com.example.pre_eclampsiascreener.ui.components.DeviceInfoBanner
 import com.example.pre_eclampsiascreener.ui.screens.ConfigureScreen
 import com.example.pre_eclampsiascreener.ui.screens.ConnectScreen
 import com.example.pre_eclampsiascreener.ui.screens.ConsoleScreen
+import com.example.pre_eclampsiascreener.ui.screens.DemoScreen
 import com.example.pre_eclampsiascreener.ui.screens.MenuScreen
 import com.example.pre_eclampsiascreener.ui.screens.NewPatientScreen
 import com.example.pre_eclampsiascreener.ui.screens.ViewDataScreen
@@ -45,7 +46,6 @@ enum class AppScreen {
 
 @Composable
 fun PESApp(
-    viewModel: AppViewModel = viewModel(),
     navController: NavHostController = rememberNavController()
 ) {
     // how it goes back
@@ -59,6 +59,8 @@ fun PESApp(
     val config by ConfigRepository.data.collectAsState()
     val devInfo by DeviceInfoRepository.deviceName.collectAsState()
 
+    val modifier = Modifier.fillMaxSize()
+
     Scaffold(
         topBar = {
             Column {
@@ -70,8 +72,7 @@ fun PESApp(
                 }
             }
         },
-                modifier = Modifier
-                .fillMaxSize()
+                modifier = modifier
     ) { innerPadding ->
         NavHost(
             navController, AppScreen.DeviceConnection.name, Modifier.padding(innerPadding)
@@ -81,41 +82,41 @@ fun PESApp(
                     onSuccess = {
                         navController.navigate(AppScreen.Options.name)
                     },
-                    modifier = Modifier
-                        .fillMaxSize()
+                    modifier = modifier
                 )
             }
             composable(route = AppScreen.Options.name) {
                 MenuScreen(
                     navController = navController,
-                    modifier = Modifier
-                        .fillMaxSize(),
+                    modifier = modifier,
                     demoMode = config.demoMode
                 )
             }
             composable(route = AppScreen.ViewData.name) {
                 ViewDataScreen(
-                    modifier = Modifier
-                        .fillMaxSize(),
+                    modifier = modifier,
                     navController,
 
                 )
             }
             composable(route = AppScreen.Configure.name) {
                 ConfigureScreen(
-                    modifier = Modifier
-                        .fillMaxSize()
+                    modifier = modifier
                 )
             }
             composable(route = AppScreen.NewPatient.name) {
                 NewPatientScreen(
-                    modifier = Modifier
-                        .fillMaxSize()
+                    modifier = modifier
                 )
             }
             composable(route = AppScreen.Console.name) {
                 ConsoleScreen(
 
+                )
+            }
+            composable (route = AppScreen.Demo.name){
+                DemoScreen(
+                    modifier
                 )
             }
         }

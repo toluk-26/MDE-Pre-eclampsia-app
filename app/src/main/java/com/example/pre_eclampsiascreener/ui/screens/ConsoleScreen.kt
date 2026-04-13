@@ -21,7 +21,6 @@ fun ConsoleScreen(
         ){ entry ->
             ConsoleCard(
                 entry.header.timestamp,
-                0,
                 (entry.payload as? Payload.Debug)?.msg ?: ""
                 )
         }

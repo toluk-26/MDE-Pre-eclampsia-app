@@ -90,7 +90,7 @@ fun NewPatientScreen(
         floatingActionButton = {
             if (selectedDestination != NewPatientDestination.Configure.ordinal) {
                 ExtendedFloatingActionButton(
-                    onClick = { },
+                    onClick = {  },
                     icon = {
                         Icon(Icons.AutoMirrored.Outlined.ArrowForward, null)
                     },

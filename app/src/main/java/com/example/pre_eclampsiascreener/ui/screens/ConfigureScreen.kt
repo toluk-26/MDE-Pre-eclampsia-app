@@ -35,16 +35,6 @@ fun ConfigureScreen(
 ) {
     val uiState by configureViewModel.uiState.collectAsState()
 
-    val minBloodPressure = remember(uiState.minSystolic, uiState.minDiastolic) {
-        if (uiState.minSystolic == null && uiState.minDiastolic == null) ""
-        else "${uiState.minSystolic ?: ""}/${uiState.minDiastolic ?: ""}"
-    }
-
-    val maxBloodPressure = remember(uiState.maxSystolic, uiState.maxDiastolic) {
-        if (uiState.maxSystolic == null && uiState.maxDiastolic == null) ""
-        else "${uiState.maxSystolic ?: ""}/${uiState.maxDiastolic ?: ""}"
-    }
-
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -58,10 +48,12 @@ fun ConfigureScreen(
             style = MaterialTheme.typography.headlineMedium
         )
         ThresholdCard(
-            minBloodPressure,
-            maxBloodPressure,
-            configureViewModel::setMinBloodPressure,
-            configureViewModel::setMaxBloodPressure
+            minSystolic = uiState.minSystolic,
+            minDiastolic = uiState.minDiastolic,
+            maxSystolic = uiState.maxSystolic,
+            maxDiastolic = uiState.maxDiastolic,
+            onMinChange = configureViewModel::setMinBloodPressure,
+            onMaxChange = configureViewModel::setMaxBloodPressure
         )
 
         Spacer(modifier = Modifier.weight(1f))

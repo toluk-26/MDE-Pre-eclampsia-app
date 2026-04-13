@@ -30,29 +30,32 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.pre_eclampsiascreener.R
+import com.example.pre_eclampsiascreener.ui.theme.AppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview
 @Composable
 fun TopAppBarPreview() {
-    Scaffold(
-        topBar = {
-            Banner {}
-        },
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-        ) {
-            DeviceInfoBanner(
-                "PES-XXXX",
-                "0000001",
-                75
-            )
-            Text(
-                text = "hi",
-            )
+    AppTheme() {
+        Scaffold(
+            topBar = {
+                Banner {}
+            },
+        ) { innerPadding ->
+            Column(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize()
+            ) {
+                DeviceInfoBanner(
+                    "PES-XXXX",
+                    "0000001",
+                    75
+                )
+                Text(
+                    text = "hi",
+                )
+            }
         }
     }
 }
@@ -61,9 +64,11 @@ fun TopAppBarPreview() {
 @Composable
 fun Banner( onBackClick: () -> Unit) {
     TopAppBar(
-        colors = TopAppBarDefaults.topAppBarColors( // TODO: change
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            titleContentColor = MaterialTheme.colorScheme.primary,
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor    = MaterialTheme.colorScheme.primary,
+            titleContentColor = MaterialTheme.colorScheme.onPrimary,
+            navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
+            actionIconContentColor     = MaterialTheme.colorScheme.onPrimary,
         ),
         navigationIcon = {
             IconButton(onClick = onBackClick ) {
@@ -90,7 +95,7 @@ fun Banner( onBackClick: () -> Unit) {
 @Preview
 @Composable
 fun PreviewDeviceInfoBanner(){
-    Row(Modifier.background(Color.White)) {
+    AppTheme {
         DeviceInfoBanner("PES-XXXX", "0000001", 43)
     }
 }
@@ -113,33 +118,39 @@ fun DeviceInfoBanner(devID: String, patientID: String, battery: Int?){
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(3.dp),
+            .background(MaterialTheme.colorScheme.primaryContainer)
+            .padding(horizontal = 13.dp, vertical = 3.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text =  devID,
-            modifier = Modifier
-                .weight(1f),
+            modifier = Modifier.weight(1f),
             textAlign = TextAlign.Start,
+            style     = MaterialTheme.typography.labelMedium,
+            color     = MaterialTheme.colorScheme.onPrimaryContainer,
         )
         Text(
             text = "PID: $patientID",
             modifier = Modifier.weight(1f),
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            style     = MaterialTheme.typography.labelMedium,
+            color     = MaterialTheme.colorScheme.onPrimaryContainer,
         )
         Row(
-            modifier = Modifier
-                .weight(1f),
+            modifier = Modifier.weight(1f),
             horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.CenterVertically
         ){
             Icon(
                 painter = painterResource(batteryIcon),
                 contentDescription = stringResource(batteryDescription),
-            )
+                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
             Spacer(modifier= Modifier.width(4.dp))
             Text(
-                text = "$battery%"
+                text = "$battery%",
+                style     = MaterialTheme.typography.labelMedium,
+                color     = MaterialTheme.colorScheme.onPrimaryContainer,
             )
         }
 

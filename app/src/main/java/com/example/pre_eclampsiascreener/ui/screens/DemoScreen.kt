@@ -30,7 +30,7 @@ enum class DemoDestination(val route: String){
 
 @Composable
 fun DemoScreen(
-    modifier: Modifier
+    modifier: Modifier = Modifier
 ){
     val navController = rememberNavController()
     val startDestination = DemoDestination.Data

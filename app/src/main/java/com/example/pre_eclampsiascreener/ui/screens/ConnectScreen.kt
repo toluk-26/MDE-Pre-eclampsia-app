@@ -4,15 +4,19 @@ import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.content.Intent
 import android.os.Build
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bluetooth
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Text
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -26,20 +30,21 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.pre_eclampsiascreener.ble.ConnectState
-import com.example.pre_eclampsiascreener.ui.components.DeviceInfoCard
+import com.example.pre_eclampsiascreener.ui.components.BluetoothActionCard
+import com.example.pre_eclampsiascreener.ui.components.DeviceCard
+import com.example.pre_eclampsiascreener.ui.components.EmptyState
 import com.example.pre_eclampsiascreener.ui.viewmodels.ScanViewModel
 import kotlinx.coroutines.delay
 import no.nordicsemi.kotlin.ble.core.Manager
 import no.nordicsemi.kotlin.ble.core.android.AndroidEnvironment
 import no.nordicsemi.kotlin.ble.environment.android.compose.LocalEnvironmentOwner.current
-import androidx.compose.runtime.collectAsState
 
 @Composable
 fun ConnectScreen(
     onSuccess: () -> Unit,
     modifier: Modifier = Modifier,
     vm: ScanViewModel = viewModel(),
-){
+) {
     val environment = current
     val state by vm.uiState.collectAsStateWithLifecycle()
     val connectState by vm.connectState.collectAsStateWithLifecycle()
@@ -63,8 +68,7 @@ fun ConnectScreen(
     var permissionGranted by remember {
         mutableStateOf(
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                environment.isBluetoothScanPermissionGranted &&
-                        environment.isBluetoothConnectPermissionGranted
+                environment.isBluetoothScanPermissionGranted && environment.isBluetoothConnectPermissionGranted
             } else {
                 environment.isLocationPermissionGranted
             }
@@ -72,28 +76,24 @@ fun ConnectScreen(
     }
 
     val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestMultiplePermissions(),
-        onResult = {
-            permissionGranted =
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    environment.isBluetoothScanPermissionGranted &&
-                            environment.isBluetoothConnectPermissionGranted
-                } else {
-                    environment.isLocationPermissionGranted
-                }
-        }
-    )
+        contract = ActivityResultContracts.RequestMultiplePermissions(), onResult = {
+            permissionGranted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                environment.isBluetoothScanPermissionGranted && environment.isBluetoothConnectPermissionGranted
+            } else {
+                environment.isLocationPermissionGranted
+            }
+        })
     val enableBluetoothLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
-    ){}
+    ) {}
 
     // on screen start
     LaunchedEffect(permissionGranted) {
-        if (permissionGranted) {
+        if (!permissionGranted) {
+            vm.stopScan()
+        } else {
             vm.close()
             vm.startScan()
-        } else {
-            vm.stopScan()
         }
     }
 
@@ -111,59 +111,87 @@ fun ConnectScreen(
             is ConnectState.Connected -> {
                 onSuccess()
             }
+
             is ConnectState.Failed -> {
                 delay(2000)
                 vm.resetConnectionState()
             }
+
             else -> {}
         }
     }
 
-    when {
-        // bluetooth is off
-        state.bluetoothState != Manager.State.POWERED_ON -> {
-            Button(onClick = {
-                enableBluetoothLauncher.launch(
-                    Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+    val sortedPeripheralItems = remember(state.peripherals) {
+        state.peripherals.values
+            .sortedByDescending { it.rssi }
+            .toList()
+    }
+    Scaffold() {innerPadding ->
+        when {
+            // bluetooth is not on
+            state.bluetoothState != Manager.State.POWERED_ON -> {
+                BluetoothActionCard(
+                    icon = {
+                        Icon(
+                            Icons.Default.Bluetooth,
+                            contentDescription = null,
+                            modifier = Modifier.size(40.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    },
+                    title = "Bluetooth is off",
+                    subtitle = "Turn on Bluetooth to scan for nearby devices",
+                    buttonText = "Enable Bluetooth",
+                    onClick = {
+                        enableBluetoothLauncher.launch(
+                            Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                        )
+                    },
+                    Modifier.padding(innerPadding)
                 )
-            }) {
-                Text("Enable Bluetooth")
             }
-        }
 
-        // bluetooth needs permissions
-        !permissionGranted -> {
-            Button(onClick = { launcher.launch(permissions) }) {
-                Text("Grant required permissions")
+            // app needs bluetooth permissions
+            !permissionGranted -> {
+                BluetoothActionCard(
+                    icon = {
+                        Icon(
+                            Icons.Default.Lock,
+                            contentDescription = null,
+                            modifier = Modifier.size(40.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    },
+                    title = "Permissions required",
+                    subtitle = "Allow Bluetooth access to find and connect to your device",
+                    buttonText = "Grant permissions",
+                    onClick = { launcher.launch(permissions) },
+                    Modifier.padding(innerPadding),
+                )
             }
-        }
 
-        // regular business
-        else -> {
+            state.peripherals.isEmpty() -> {
+                EmptyState(
+                    "No devices found. Make sure the device is charging.",
+                    Modifier.padding(innerPadding),
+                )
+            }
+
+            // regular business
             // Both Bluetooth and Location permissions are granted.
-            // We can now start scanning.
-            if (state.peripherals.isEmpty()) {
-                //TODO: empty page
-                Text(
-                    text = "no devices"
-                )
-            } else {
+            // We can now start scanning and show nearby devices.
+            else -> {
                 LazyColumn(
-                    modifier = modifier
-                        .padding(6.dp, 0.dp)
+                    modifier = modifier.padding(6.dp, 0.dp)
                 ) {
                     items(
-                        state.peripherals.values
-                        .sortedByDescending { it.rssi }
-                        .toList()
+                        sortedPeripheralItems
                     ) { device ->
-                        val isThisDeviceSelected = vm.uiState.collectAsState().value.selectedPeripheral == device.peripheral
+                        val isThisDeviceSelected = state.selectedPeripheral == device.peripheral
                         val cs = if (isThisDeviceSelected) connectState else ConnectState.Idle
-                        DeviceInfoCard(
-                            device.peripheral.name,
-                            device.peripheral.address,
-                            device.rssi,
-                            cs
+                        DeviceCard(
+                            modifier = Modifier.padding(innerPadding),
+                            device.peripheral.name, device.peripheral.address, device.rssi, cs,
                         ) {
                             vm.onPeripheralSelected(device.peripheral)
                         }
@@ -171,7 +199,6 @@ fun ConnectScreen(
                     }
                 }
             }
-
         }
     }
 }
