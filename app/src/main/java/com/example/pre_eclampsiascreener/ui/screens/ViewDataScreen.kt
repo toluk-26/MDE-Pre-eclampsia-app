@@ -35,8 +35,7 @@ import kotlinx.coroutines.runBlocking
 
 @Composable
 fun ViewDataScreen(
-    modifier: Modifier,
-    navController: NavHostController
+    modifier: Modifier
 ) {
     val config by ConfigRepository.data.collectAsState()
     val entries by TransferRepository.sensor.collectAsState()

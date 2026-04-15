@@ -2,8 +2,10 @@ package com.example.pre_eclampsiascreener
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -48,80 +50,82 @@ enum class AppScreen {
 fun PESApp(
     navController: NavHostController = rememberNavController()
 ) {
-    // how it goes back
     val backStackEntry by navController.currentBackStackEntryAsState()
-    // remember the current screen
-    val currentScreen = AppScreen.valueOf(
-        backStackEntry?.destination?.route ?: AppScreen.DeviceConnection.name
-    )
+    val currentRoute = backStackEntry?.destination?.route
 
-    val batteryLevel by BatteryRepository.data.collectAsState()
-    val config by ConfigRepository.data.collectAsState()
-    val devInfo by DeviceInfoRepository.deviceName.collectAsState()
-
-    val modifier = Modifier.fillMaxSize()
+    val isConnectionScreen = currentRoute == AppScreen.DeviceConnection.name
 
     Scaffold(
         topBar = {
-            Column {
-                Banner {}
-                if (currentScreen != AppScreen.DeviceConnection) {
-                    DeviceInfoBanner(
-                        devInfo, config.pid.toString(), batteryLevel.batteryLevel
+            Column() {
+                Banner {}   // your top banner
+                if (!isConnectionScreen) {
+                    // Show device info only when connected
+                    val batteryLevel by BatteryRepository.data.collectAsState()
+                    val config by ConfigRepository.data.collectAsState()
+                    val devInfo by DeviceInfoRepository.deviceName.collectAsState()
+
+                    DeviceInfoBanner(devInfo, config.pid.toString(), batteryLevel.batteryLevel)
+                }
+            }
+        }
+    ) { innerPadding ->
+//        Column {
+//                DeviceInfoBanner("pissin", "123456789", 11)
+
+            NavHost(
+                navController = navController,
+                startDestination = AppScreen.DeviceConnection.name,
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize()           // ← Important
+            ) {
+
+                composable(route = AppScreen.DeviceConnection.name) {
+                    ConnectScreen(
+                        onSuccess = {
+                            navController.navigate(AppScreen.Options.name)
+                        },
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+                composable(route = AppScreen.Options.name) {
+                    val config by ConfigRepository.data.collectAsState()
+                    MenuScreen(
+                        navController = navController,
+                        modifier = Modifier.fillMaxSize(),
+                        demoMode = config.demoMode
+                    )
+                }
+                composable(route = AppScreen.ViewData.name) {
+                    ViewDataScreen(
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+                composable(route = AppScreen.Configure.name) {
+                    ConfigureScreen(
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+                composable(route = AppScreen.NewPatient.name) {
+                    NewPatientScreen(
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+                composable(route = AppScreen.Console.name) {
+                    ConsoleScreen(
+                        Modifier.fillMaxSize()
+                    )
+                }
+                composable(route = AppScreen.Demo.name) {
+                    DemoScreen(
+                        Modifier.fillMaxSize()
                     )
                 }
             }
-        },
-                modifier = modifier
-    ) { innerPadding ->
-        NavHost(
-            navController, AppScreen.DeviceConnection.name, Modifier.padding(innerPadding)
-        ) {
-            composable(route = AppScreen.DeviceConnection.name) {
-                ConnectScreen(
-                    onSuccess = {
-                        navController.navigate(AppScreen.Options.name)
-                    },
-                    modifier = modifier
-                )
-            }
-            composable(route = AppScreen.Options.name) {
-                MenuScreen(
-                    navController = navController,
-                    modifier = modifier,
-                    demoMode = config.demoMode
-                )
-            }
-            composable(route = AppScreen.ViewData.name) {
-                ViewDataScreen(
-                    modifier = modifier,
-                    navController,
-
-                )
-            }
-            composable(route = AppScreen.Configure.name) {
-                ConfigureScreen(
-                    modifier = modifier
-                )
-            }
-            composable(route = AppScreen.NewPatient.name) {
-                NewPatientScreen(
-                    modifier = modifier
-                )
-            }
-            composable(route = AppScreen.Console.name) {
-                ConsoleScreen(
-
-                )
-            }
-            composable (route = AppScreen.Demo.name){
-                DemoScreen(
-                    modifier
-                )
-            }
         }
     }
-}
+//    }
 
 @Preview(showBackground = true)
 @Composable

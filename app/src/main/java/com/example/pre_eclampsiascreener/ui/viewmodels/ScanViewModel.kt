@@ -2,41 +2,56 @@ package com.example.pre_eclampsiascreener.ui.viewmodels
 
 import android.app.Application
 import android.util.Log
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pre_eclampsiascreener.MainApplication
-import com.example.pre_eclampsiascreener.ble.BleManager
 import com.example.pre_eclampsiascreener.ble.ConnectState
+import com.example.pre_eclampsiascreener.ble.Profile
+import com.example.pre_eclampsiascreener.ble.repo.ConfigRepository
+import com.example.pre_eclampsiascreener.ble.repo.DeviceInfoRepository
+import com.example.pre_eclampsiascreener.ble.repo.TransferRepository
 import com.example.pre_eclampsiascreener.data.ScannedDevice
 import com.example.pre_eclampsiascreener.ui.state.ScanUiState
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.filterNot
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import no.nordicsemi.kotlin.ble.client.android.CentralManager
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
+import no.nordicsemi.kotlin.ble.client.android.preview.PreviewPeripheral
+import no.nordicsemi.kotlin.ble.client.distinctByPeripheral
+import no.nordicsemi.kotlin.ble.core.Phy
+import no.nordicsemi.kotlin.ble.core.PhyInUse
 import kotlin.time.Duration
+import kotlin.uuid.ExperimentalUuidApi
 
 private const val TAG = "ScanViewModel"
 
 class ScanViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val bleManager: BleManager = (application as MainApplication).bleManager
-
-    val centralManager: CentralManager = bleManager.centralManager
+    val centralManager: CentralManager = (application as MainApplication).centralManager
 
     private val _uiState = MutableStateFlow(ScanUiState())
     val uiState: StateFlow<ScanUiState> = _uiState.asStateFlow()
-    val connectState: StateFlow<ConnectState> = bleManager.connectState
+
+    private val _peripherals: MutableStateFlow<List<Peripheral>> = MutableStateFlow(emptyList())
+    val peripherals = _peripherals.asStateFlow()
 
     private var scanJob: Job? = null
-
+    private var connectJob: Job? = null
 
     init {
         centralManager.state
@@ -68,28 +83,13 @@ class ScanViewModel(application: Application) : AndroidViewModel(application) {
                     )
                 }
             }
-//            .distinctByPeripheral() // if enable, change peripheral to list, not map
-//            .map { it.peripheral }
-//            .filterNot { _uiState.value.peripherals.containsKey(it.peripheral) }
-            .onEach { scanResult ->
-                val newPeripheral = scanResult.peripheral
-
-                _uiState.update { current ->
-                    current.copy(
-                        peripherals = current.peripherals
-                            .toMutableMap()
-                            .apply {
-                                this[newPeripheral] =
-                                    this[newPeripheral]?.copy(
-                                        rssi = scanResult.rssi
-                                    )
-                                        ?: ScannedDevice(
-                                            newPeripheral,
-                                            scanResult.rssi
-                                        )
-                            }
-                    )
-                }
+          .distinctByPeripheral()
+            .map { it.peripheral }
+            .filterNot { _peripherals.value.contains(it) }
+            //.distinct()
+            .onEach { newPeripheral ->
+                Log.d(TAG, "Found new device: ${newPeripheral.name} (${newPeripheral.address})")
+                _peripherals.update { peripherals.value + newPeripheral }
             }
             .catch { e ->
                 Log.e(TAG, "Scan error: $e")
@@ -113,28 +113,89 @@ class ScanViewModel(application: Application) : AndroidViewModel(application) {
     fun stopScan() {
         Log.d(TAG, "Stop Scanning. should be leaving page")
         scanJob?.cancel()
-        _uiState.update { it.copy(isScanning = false, peripherals = emptyMap()) }
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        centralManager.close()
+        _uiState.update { it.copy(isScanning = false) }
     }
 
     fun onPeripheralSelected(peripheral: Peripheral) {
         Log.d(TAG, "selected periph")
         _uiState.update { it.copy(selectedPeripheral = peripheral) }
-        bleManager.connect(peripheral)
+
+        // Cancel any ongoing connection attempt before starting a new one
+        connectJob?.cancel()
+        connectJob = viewModelScope.launch { // Use the appScope passed in the constructor
+            try {
+                _uiState.update { it.copy(connectState = ConnectState.Connecting) }
+                Log.e("connectstate", "Connectstate connecting")
+
+                // Note: registerServices must be launched in a way that can be cancelled
+                registerServices(peripheral, this)
+
+                centralManager.connect(
+                    peripheral = peripheral,
+                    options = CentralManager.ConnectionOptions.Direct(
+                        automaticallyRequestHighestMtu = true
+                    )
+                )
+
+                DeviceInfoRepository.setDeviceName(peripheral.name)
+
+                // Wait for specific data before declaring "Connected"
+                ConfigRepository.data.first { it.pid != null }
+                _uiState.update { it.copy(connectState = ConnectState.Connected) }
+                Log.e("connectstate", "Connectstate connected")
+                // start transfer
+                TransferRepository.trigger()
+            } catch (e: Exception) {
+                Log.e(TAG, "Connect failed", e)
+                _uiState.update { it.copy(connectState = ConnectState.Failed) }
+                Log.e("connectstate", "Connectstate failed")
+            }
+        }
+    }
+
+    fun disconnect(){
+        val selected = _uiState.value.selectedPeripheral
+        connectJob?.cancel()
+
+        viewModelScope.launch {
+            selected?.let { peripheral ->
+                try {
+                    peripheral.disconnect()
+                    Log.d(TAG, "Disconnected ${peripheral.name}")
+                } catch (e: Exception) {
+                    Log.w(TAG, "Error during disconnect", e)
+                }
+            }
+            resetConnectionState()
+            _uiState.update { it.copy(selectedPeripheral = null) }
+        }
+    }
+
+    @OptIn(ExperimentalUuidApi::class)
+    private suspend fun registerServices(peripheral: Peripheral, scope: CoroutineScope) {
+        Profile.entries.forEach { profile ->
+            peripheral.profile(
+                serviceUuid = profile.uuid,
+                required = false
+            ) { remoteService ->
+                profile.createManager()
+                    .let {
+                        Log.d(TAG, "Service found, starting manager for $profile")
+                        it.observeServiceInteractions(remoteService, scope)
+                        awaitCancellation()
+                    }
+
+            }
+        }
     }
 
     fun resetConnectionState() {
-        Log.d(TAG, "unselected periph")
-        _uiState.update { it.copy(selectedPeripheral = null) }
+        _uiState.update { it.copy(connectState = ConnectState.Idle) }
+        Log.e("connectstate", "Connectstate idle")
     }
 
-    fun close() {
-        bleManager.disconnect()
-        resetConnectionState()
-        bleManager.resetState()
+    public override fun onCleared() {
+        stopScan()
+        super.onCleared()
     }
 }

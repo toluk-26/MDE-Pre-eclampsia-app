@@ -34,7 +34,7 @@ fun BluetoothActionCard(
     subtitle: String,
     buttonText: String,
     onClick: () -> Unit,
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,

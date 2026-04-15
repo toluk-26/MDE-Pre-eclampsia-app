@@ -40,28 +40,28 @@ import com.example.pre_eclampsiascreener.ble.ConnectState
 @Preview(showBackground = true)
 @Composable
 fun DevicePreviewIdle() {
-    DeviceCard(modifier = Modifier.fillMaxWidth(),null, "FD:6D:43:3B:F0:E8", -90, ConnectState.Idle,{})
+    DeviceCard(null, "FD:6D:43:3B:F0:E8", -90, ConnectState.Idle,modifier = Modifier.fillMaxWidth(),{})
 }
 
 @Preview(showBackground = true)
 @Composable
 fun DevicePreviewLoading() {
-    DeviceCard(modifier = Modifier.fillMaxWidth(),null, "FD:6D:43:3B:F0:E8", -90, ConnectState.Connecting,{})
+    DeviceCard(null, "FD:6D:43:3B:F0:E8", -90, ConnectState.Connecting,modifier = Modifier.fillMaxWidth(),{})
 }
 
 @Preview(showBackground = true)
 @Composable
 fun DevicePreviewError() {
-    DeviceCard(modifier = Modifier.fillMaxWidth(),null, "FD:6D:43:3B:F0:E8", -90, ConnectState.Failed,{})
+    DeviceCard(null, "FD:6D:43:3B:F0:E8", -90, ConnectState.Failed,modifier = Modifier.fillMaxWidth(),{})
 }
 
 @Composable
 fun DeviceCard(
-    modifier: Modifier = Modifier,
     name: String?,
     address: String,
     rssi: Int,
     connectState: ConnectState = ConnectState.Idle,
+    modifier: Modifier = Modifier,
     onDeviceClick: () -> Unit,
 ) {
     val isAbleToConnect = connectState != ConnectState.Connecting
@@ -72,12 +72,12 @@ fun DeviceCard(
 //        enabled   = isAbleToConnect,
         modifier  = modifier.fillMaxWidth(),
         shape     = RoundedCornerShape(16.dp),
-        colors    = CardDefaults.cardColors(
-            containerColor         = MaterialTheme.colorScheme.surfaceContainer,
-            disabledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
-            disabledContentColor   = MaterialTheme.colorScheme.onSurface,
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+//        colors    = CardDefaults.cardColors(
+//            containerColor         = MaterialTheme.colorScheme.surfaceContainer,
+//            disabledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+//            disabledContentColor   = MaterialTheme.colorScheme.onSurface,
+//        ),
+//        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
         border    = if (isFailed)
             BorderStroke(1.dp, MaterialTheme.colorScheme.error)
         else null,
