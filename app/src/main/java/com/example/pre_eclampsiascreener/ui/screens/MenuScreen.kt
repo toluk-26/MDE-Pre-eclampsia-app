@@ -2,7 +2,6 @@ package com.example.pre_eclampsiascreener.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -31,20 +30,15 @@ import com.example.pre_eclampsiascreener.ui.theme.AppTheme
 
 @Composable
 fun MenuScreen(
-    modifier: Modifier = Modifier,
-    navController: NavController,
-    demoMode: Boolean = false
+    modifier: Modifier = Modifier, navController: NavController, demoMode: Boolean = false
 ) {
     Box(
-        modifier = modifier,
-        contentAlignment = Alignment.Center
+        modifier = modifier, contentAlignment = Alignment.Center
     ) {
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.padding(24.dp),
-
-
         ) {
 
             item {
@@ -64,8 +58,7 @@ fun MenuScreen(
                     "View Data",
                     "Browse recorded results",
                     Icons.Outlined.SsidChart,
-                    {navController.navigate(AppScreen.ViewData.name)}
-                )
+                    { navController.navigate(AppScreen.ViewData.name) })
             }
 
             item {
@@ -73,8 +66,7 @@ fun MenuScreen(
                     "New Patient",
                     "Start a new screening session",
                     Icons.Outlined.PersonAdd,
-                    { navController.navigate(AppScreen.NewPatient.name) }
-                )
+                    { navController.navigate(AppScreen.NewPatient.name) })
             }
 
             item {
@@ -82,16 +74,13 @@ fun MenuScreen(
                     "Configure Device",
                     "Adjust app settings",
                     Icons.Outlined.Settings,
-                    { navController.navigate(AppScreen.Configure.name) }
-                )
+                    { navController.navigate(AppScreen.Configure.name) })
+            }
+            item {
+                Spacer(Modifier.size(5.dp))
             }
 
             if (demoMode) {
-
-                item {
-                    Spacer(Modifier.size(5.dp))
-                }
-
                 item {
                     Text(
                         text = "DEVELOPER OPTIONS",

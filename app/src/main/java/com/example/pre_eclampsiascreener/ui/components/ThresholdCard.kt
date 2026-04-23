@@ -16,10 +16,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import kotlin.let
 
 @Composable
 fun ThresholdCard(
+    currentMinSystolic: Int?,
+    currentMinDiastolic: Int?,
+    currentMaxSystolic: Int?,
+    currentMaxDiastolic: Int?,
     minSystolic: Int?,
     minDiastolic: Int?,
     maxSystolic: Int?,
@@ -35,6 +38,15 @@ fun ThresholdCard(
     val maxBloodValue = remember(maxSystolic, maxDiastolic) {
         if (maxSystolic == null && maxDiastolic == null) ""
         else "${maxSystolic ?: ""}/${maxDiastolic ?: ""}"
+    }
+
+    val currentMinValue = remember(currentMinSystolic, currentMinDiastolic) {
+        if (currentMinSystolic == null && currentMinDiastolic == null) null
+        else "${currentMinSystolic ?: ""}/${currentMinDiastolic ?: ""}"
+    }
+    val currentMaxValue = remember(currentMaxSystolic, currentMaxDiastolic) {
+        if (currentMaxSystolic == null && currentMaxDiastolic == null) null
+        else "${currentMaxSystolic ?: ""}/${currentMaxDiastolic ?: ""}"
     }
 
     // Validation: must be empty OR match digits/slash and have valid ranges
@@ -75,18 +87,25 @@ fun ThresholdCard(
             )
 
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-
                 OutlinedTextField(
                     value = minBloodValue,
                     onValueChange = { onMinChange(sanitize(it)) },
                     modifier = Modifier.weight(1f),
                     label = { Text("Minimum") },
-                    placeholder = { Text("90/60") },
+                    placeholder = { Text(currentMinValue ?: "90/60") },
                     singleLine = true,
                     isError = minIsError,
-                    supportingText = if (minIsError) {
-                        { Text("Use format SYS/DIA\ne.g. 90/60") }
-                    } else null,
+                    supportingText = when {
+                        minIsError -> {
+                            { Text("Use format SYS/DIA\ne.g. 90/60") }
+                        }
+
+                        currentMinValue != null -> {
+                            { Text("Current: $currentMinValue") }
+                        }
+
+                        else -> null
+                    },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                 )
 
@@ -95,12 +114,20 @@ fun ThresholdCard(
                     onValueChange = { onMaxChange(sanitize(it)) },
                     modifier = Modifier.weight(1f),
                     label = { Text("Maximum") },
-                    placeholder = { Text("120/80") },
+                    placeholder = { Text(currentMaxValue ?: "120/80") },
                     singleLine = true,
                     isError = maxIsError,
-                    supportingText = if (maxIsError) {
-                        { Text("Use format SYS/DIA\ne.g. 120/80") }
-                    } else null,
+                    supportingText = when {
+                        maxIsError -> {
+                            { Text("Use format SYS/DIA\ne.g. 120/80") }
+                        }
+
+                        currentMaxValue != null -> {
+                            { Text("Current: $currentMaxValue") }
+                        }
+
+                        else -> null
+                    },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                 )
             }

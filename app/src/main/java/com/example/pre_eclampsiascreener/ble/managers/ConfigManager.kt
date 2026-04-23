@@ -71,16 +71,18 @@ class ConfigManager : ServiceManager {
         }
 
         try {
-            diastolicCharacteristic = remoteService.characteristics.firstOrNull {
-                it.uuid == DIASTOLIC_CHARACTERISTIC_UUID
+            thresholdCharacteristic = remoteService.characteristics.firstOrNull {
+                it.uuid == THRESHOLD_CHARACTERISTIC_UUID
             } ?: throw IllegalStateException("Characteristic not found")
-            diastolicCharacteristic
+            thresholdCharacteristic
                 .subscribe()
                 .mapNotNull { it.toMinMaxList() }
                 .onEach {
-                    Log.d(TAG_DATA, "Diastolic Min = ${it[0]}")
-                    Log.d(TAG_DATA, "Diastolic Max = ${it[1]}")
-                    ConfigRepository.updateDiastolic(it)
+                    Log.d(TAG_DATA, "Systolic Min = ${it[0]}")
+                    Log.d(TAG_DATA, "Systolic Max = ${it[1]}")
+                    Log.d(TAG_DATA, "Diastolic Min = ${it[2]}")
+                    Log.d(TAG_DATA, "Diastolic Max = ${it[3]}")
+                    ConfigRepository.updateThresholds(it)
                 }
                 .onCompletion { ConfigRepository.clear() }
                 .catch { e ->
@@ -88,86 +90,61 @@ class ConfigManager : ServiceManager {
                 }
                 .launchIn(scope)
 
-            diastolicCharacteristic
-                .read().toMinMaxList()
-                .also {
-                    Log.d(TAG_DATA, "Diastolic Min = ${it[0]}")
-                    Log.d(TAG_DATA, "Diastolic Max = ${it[1]}")
-                    ConfigRepository.updateDiastolic(it)
-                }
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to init: ${e.toString()}")
-        }
-
-        try {
-            systolicCharacteristic = remoteService.characteristics.firstOrNull {
-                it.uuid == SYSTOLIC_CHARACTERISTIC_UUID
-            } ?: throw IllegalStateException("Characteristic not found")
-            systolicCharacteristic
-                .subscribe()
-                .mapNotNull { it.toMinMaxList() }
-                .onEach {
-                    Log.d(TAG_DATA, "Systolic Min = ${it[0]}")
-                    Log.d(TAG_DATA, "Systolic Max = ${it[1]}")
-                    ConfigRepository.updateSystolic(it)
-                }
-                .onCompletion { ConfigRepository.clear() }
-                .catch { e ->
-                    Log.e(TAG, e.toString())
-                }
-                .launchIn(scope)
-
-            systolicCharacteristic
+            thresholdCharacteristic
                 .read().toMinMaxList()
                 .also {
                     Log.d(TAG_DATA, "Systolic Min = ${it[0]}")
                     Log.d(TAG_DATA, "Systolic Max = ${it[1]}")
-                    ConfigRepository.updateSystolic(it)
+                    Log.d(TAG_DATA, "Diastolic Min = ${it[2]}")
+                    Log.d(TAG_DATA, "Diastolic Max = ${it[3]}")
+                    ConfigRepository.updateThresholds(it)
                 }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to init: ${e.toString()}")
         }
 
-        try {
-            diastolicCoefficientsCharacteristic = remoteService.characteristics.firstOrNull {
-                it.uuid == DIASTOLIC_COEFFICIENTS_CHARACTERISTIC_UUID
-            } ?: throw IllegalStateException("Characteristic not found")
-            diastolicCoefficientsCharacteristic
-                .subscribe()
-                .mapNotNull { it.toFloatList() }
-                .onEach {
-                    Log.d(TAG_DATA, "Diastolic Coefficient M = ${it[0]}")
-                    Log.d(TAG_DATA, "Diastolic Coefficient B = ${it[1]}")
-                    ConfigRepository.updateDiastolicCoefficients(it)
-                }
-                .onCompletion { ConfigRepository.clear() }
-                .catch { e ->
-                    Log.e(TAG, e.toString())
-                }
-                .launchIn(scope)
+//        try {
+//            systolicCharacteristic = remoteService.characteristics.firstOrNull {
+//                it.uuid == SYSTOLIC_CHARACTERISTIC_UUID
+//            } ?: throw IllegalStateException("Characteristic not found")
+//            systolicCharacteristic
+//                .subscribe()
+//                .mapNotNull { it.toMinMaxList() }
+//                .onEach {
+//                    Log.d(TAG_DATA, "Systolic Min = ${it[0]}")
+//                    Log.d(TAG_DATA, "Systolic Max = ${it[1]}")
+//                    ConfigRepository.updateSystolic(it)
+//                }
+//                .onCompletion { ConfigRepository.clear() }
+//                .catch { e ->
+//                    Log.e(TAG, e.toString())
+//                }
+//                .launchIn(scope)
+//
+//            systolicCharacteristic
+//                .read().toMinMaxList()
+//                .also {
+//                    Log.d(TAG_DATA, "Systolic Min = ${it[0]}")
+//                    Log.d(TAG_DATA, "Systolic Max = ${it[1]}")
+//                    ConfigRepository.updateSystolic(it)
+//                }
+//        } catch (e: Exception) {
+//            Log.e(TAG, "Failed to init: ${e.toString()}")
+//        }
 
-            diastolicCoefficientsCharacteristic
-                .read().toFloatList()
-                .also {
-                    Log.d(TAG_DATA, "Diastolic Coefficient M = ${it[0]}")
-                    Log.d(TAG_DATA, "Diastolic Coefficient B = ${it[1]}")
-                    ConfigRepository.updateDiastolicCoefficients(it)
-                }
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to init: ${e.toString()}")
-        }
-
         try {
-            systolicCoefficientsCharacteristic = remoteService.characteristics.firstOrNull {
-                it.uuid == SYSTOLIC_COEFFICIENTS_CHARACTERISTIC_UUID
+            coefficientsCharacteristic = remoteService.characteristics.firstOrNull {
+                it.uuid == COEFFICIENTS_CHARACTERISTIC_UUID
             } ?: throw IllegalStateException("Characteristic not found")
-            systolicCoefficientsCharacteristic
+            coefficientsCharacteristic
                 .subscribe()
                 .mapNotNull { it.toFloatList() }
                 .onEach {
                     Log.d(TAG_DATA, "Systolic Coefficient M = ${it[0]}")
                     Log.d(TAG_DATA, "Systolic Coefficient B = ${it[1]}")
-                    ConfigRepository.updateSystolicCoefficients(it)
+                    Log.d(TAG_DATA, "Diastolic Coefficient M = ${it[2]}")
+                    Log.d(TAG_DATA, "Diastolic Coefficient B = ${it[3]}")
+                    ConfigRepository.updateCoefficients(it)
                 }
                 .onCompletion { ConfigRepository.clear() }
                 .catch { e ->
@@ -175,24 +152,55 @@ class ConfigManager : ServiceManager {
                 }
                 .launchIn(scope)
 
-            systolicCoefficientsCharacteristic
+            coefficientsCharacteristic
                 .read().toFloatList()
                 .also {
                     Log.d(TAG_DATA, "Systolic Coefficient M = ${it[0]}")
                     Log.d(TAG_DATA, "Systolic Coefficient B = ${it[1]}")
-                    ConfigRepository.updateSystolicCoefficients(it)
+                    Log.d(TAG_DATA, "Diastolic Coefficient M = ${it[2]}")
+                    Log.d(TAG_DATA, "Diastolic Coefficient B = ${it[3]}")
+                    ConfigRepository.updateCoefficients(it)
                 }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to init: ${e.toString()}")
         }
-
-        try {
-            newPatientCharacteristic = remoteService.characteristics.firstOrNull {
-                it.uuid == NEW_PATIENT_CHARACTERISTIC_UUID
-            } ?: throw IllegalStateException("Characteristic not found")
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to init: ${e.toString()}")
-        }
+//
+//        try {
+//            systolicCoefficientsCharacteristic = remoteService.characteristics.firstOrNull {
+//                it.uuid == SYSTOLIC_COEFFICIENTS_CHARACTERISTIC_UUID
+//            } ?: throw IllegalStateException("Characteristic not found")
+//            systolicCoefficientsCharacteristic
+//                .subscribe()
+//                .mapNotNull { it.toFloatList() }
+//                .onEach {
+//                    Log.d(TAG_DATA, "Systolic Coefficient M = ${it[0]}")
+//                    Log.d(TAG_DATA, "Systolic Coefficient B = ${it[1]}")
+//                    ConfigRepository.updateSystolicCoefficients(it)
+//                }
+//                .onCompletion { ConfigRepository.clear() }
+//                .catch { e ->
+//                    Log.e(TAG, e.toString())
+//                }
+//                .launchIn(scope)
+//
+//            systolicCoefficientsCharacteristic
+//                .read().toFloatList()
+//                .also {
+//                    Log.d(TAG_DATA, "Systolic Coefficient M = ${it[0]}")
+//                    Log.d(TAG_DATA, "Systolic Coefficient B = ${it[1]}")
+//                    ConfigRepository.updateSystolicCoefficients(it)
+//                }
+//        } catch (e: Exception) {
+//            Log.e(TAG, "Failed to init: ${e.toString()}")
+//        }
+//
+//        try {
+//            newPatientCharacteristic = remoteService.characteristics.firstOrNull {
+//                it.uuid == NEW_PATIENT_CHARACTERISTIC_UUID
+//            } ?: throw IllegalStateException("Characteristic not found")
+//        } catch (e: Exception) {
+//            Log.e(TAG, "Failed to init: ${e.toString()}")
+//        }
     }
 
 
@@ -201,33 +209,33 @@ class ConfigManager : ServiceManager {
 
         private val DEMO_MODE_CHARACTERISTIC_UUID =
             Uuid.parse("32610001-7bdb-4430-a1b9-e7d26fb2b981")
-        private val NEW_PATIENT_CHARACTERISTIC_UUID =
-            Uuid.parse("32610002-7bdb-4430-a1b9-e7d26fb2b981")
+//        private val NEW_PATIENT_CHARACTERISTIC_UUID =
+//            Uuid.parse("32610002-7bdb-4430-a1b9-e7d26fb2b981")
         private val PID_CHARACTERISTIC_UUID = Uuid.parse("32610003-7bdb-4430-a1b9-e7d26fb2b981")
-        private val DIASTOLIC_CHARACTERISTIC_UUID =
+        private val THRESHOLD_CHARACTERISTIC_UUID =
             Uuid.parse("32610004-7bdb-4430-a1b9-e7d26fb2b981")
-        private val SYSTOLIC_CHARACTERISTIC_UUID =
-            Uuid.parse("32610005-7bdb-4430-a1b9-e7d26fb2b981")
-        private val DIASTOLIC_COEFFICIENTS_CHARACTERISTIC_UUID =
+//        private val SYSTOLIC_CHARACTERISTIC_UUID =
+//            Uuid.parse("32610005-7bdb-4430-a1b9-e7d26fb2b981")
+        private val COEFFICIENTS_CHARACTERISTIC_UUID =
             Uuid.parse("32610006-7bdb-4430-a1b9-e7d26fb2b981")
-        private val SYSTOLIC_COEFFICIENTS_CHARACTERISTIC_UUID =
-            Uuid.parse("32610007-7bdb-4430-a1b9-e7d26fb2b981")
+//        private val SYSTOLIC_COEFFICIENTS_CHARACTERISTIC_UUID =
+//            Uuid.parse("32610007-7bdb-4430-a1b9-e7d26fb2b981")
 
-        private lateinit var newPatientCharacteristic: RemoteCharacteristic
+//        private lateinit var newPatientCharacteristic: RemoteCharacteristic
         private lateinit var pidCharacteristic: RemoteCharacteristic
-        private lateinit var diastolicCharacteristic: RemoteCharacteristic
-        private lateinit var systolicCharacteristic: RemoteCharacteristic
-        private lateinit var diastolicCoefficientsCharacteristic: RemoteCharacteristic
-        private lateinit var systolicCoefficientsCharacteristic: RemoteCharacteristic
+        private lateinit var thresholdCharacteristic: RemoteCharacteristic
+//        private lateinit var systolicCharacteristic: RemoteCharacteristic
+        private lateinit var coefficientsCharacteristic: RemoteCharacteristic
+//        private lateinit var systolicCoefficientsCharacteristic: RemoteCharacteristic
 
-        suspend fun writeNewPatient() {
-            try {
-                if (::newPatientCharacteristic.isInitialized)
-                    newPatientCharacteristic.write(byteArrayOf(1.toByte()), WriteType.WITH_RESPONSE)
-            } catch (e: Exception) {
-                Log.e(TAG, "failed to write ${e.toString()}")
-            }
-        }
+//        suspend fun writeNewPatient() {
+//            try {
+//                if (::newPatientCharacteristic.isInitialized)
+//                    newPatientCharacteristic.write(byteArrayOf(1.toByte()), WriteType.WITH_RESPONSE)
+//            } catch (e: Exception) {
+//                Log.e(TAG, "failed to write ${e.toString()}")
+//            }
+//        }
 
         suspend fun writePID(pid: Int) {
             try {
@@ -238,25 +246,25 @@ class ConfigManager : ServiceManager {
             }
         }
 
-        suspend fun writeDiastolic(values: List<Int>) {
+        suspend fun writeThreshold(values: List<Int>) {
             try {
-                if (::diastolicCharacteristic.isInitialized)
-                    diastolicCharacteristic.write(
-                        byteArrayOf(
-                            values[0].toByte(),
-                            values[1].toByte()
-                        ), WriteType.WITH_RESPONSE
+                if (::thresholdCharacteristic.isInitialized)
+                    thresholdCharacteristic.write(
+
+
+                            values.map { it.toByte() }.toByteArray()
+                        , WriteType.WITH_RESPONSE
                     )
             } catch (e: Exception) {
                 Log.e(TAG, "failed to write ${e.toString()}")
             }
         }
 
-        suspend fun writeDiastolicCoefficients(values: List<Float>) {
+        suspend fun writeCoefficients(values: List<Float>) {
             try {
-                if (::diastolicCoefficientsCharacteristic.isInitialized)
-                    diastolicCoefficientsCharacteristic.write(
-                        values[0].toByteArray() + values[1].toByteArray(),
+                if (::coefficientsCharacteristic.isInitialized)
+                    coefficientsCharacteristic.write(
+                        values[0].toByteArray() + values[1].toByteArray() + values[2].toByteArray() + values[3].toByteArray(),
                         WriteType.WITH_RESPONSE
                     )
             } catch (e: Exception) {
@@ -264,30 +272,30 @@ class ConfigManager : ServiceManager {
             }
         }
 
-        suspend fun writeSystolic(values: List<Int>) {
-            try {
-                if (::systolicCharacteristic.isInitialized)
-                    systolicCharacteristic.write(
-                        byteArrayOf(
-                            values[0].toByte(),
-                            values[1].toByte()
-                        ), WriteType.WITH_RESPONSE
-                    )
-            } catch (e: Exception) {
-                Log.e(TAG, "failed to write ${e.toString()}")
-            }
-        }
-
-        suspend fun writeSystolicCoefficients(values: List<Float>) {
-            try {
-                if (::systolicCoefficientsCharacteristic.isInitialized)
-                    systolicCoefficientsCharacteristic.write(
-                        values[0].toByteArray() + values[1].toByteArray(),
-                        WriteType.WITH_RESPONSE
-                    )
-            } catch (e: Exception) {
-                Log.e(TAG, "failed to write ${e.toString()}")
-            }
-        }
+//        suspend fun writeSystolic(values: List<Int>) {
+//            try {
+//                if (::systolicCharacteristic.isInitialized)
+//                    systolicCharacteristic.write(
+//                        byteArrayOf(
+//                            values[0].toByte(),
+//                            values[1].toByte()
+//                        ), WriteType.WITH_RESPONSE
+//                    )
+//            } catch (e: Exception) {
+//                Log.e(TAG, "failed to write ${e.toString()}")
+//            }
+//        }
+//
+//        suspend fun writeSystolicCoefficients(values: List<Float>) {
+//            try {
+//                if (::systolicCoefficientsCharacteristic.isInitialized)
+//                    systolicCoefficientsCharacteristic.write(
+//                        values[0].toByteArray() + values[1].toByteArray(),
+//                        WriteType.WITH_RESPONSE
+//                    )
+//            } catch (e: Exception) {
+//                Log.e(TAG, "failed to write ${e.toString()}")
+//            }
+//        }
     }
 }

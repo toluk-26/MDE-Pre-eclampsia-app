@@ -34,6 +34,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.pre_eclampsiascreener.ble.ConnectState
 import com.example.pre_eclampsiascreener.ui.components.BluetoothActionCard
 import com.example.pre_eclampsiascreener.ui.components.DeviceCard
+import com.example.pre_eclampsiascreener.ui.components.EmptyState
+import com.example.pre_eclampsiascreener.ui.state.NavEvent
 import com.example.pre_eclampsiascreener.ui.viewmodels.ScanViewModel
 import kotlinx.coroutines.delay
 import no.nordicsemi.kotlin.ble.core.Manager
@@ -89,20 +91,25 @@ fun ConnectScreen(
         contract = ActivityResultContracts.StartActivityForResult()
     ) {}
 
-    LaunchedEffect (Unit) {
+    LifecycleResumeEffect(Unit) {
         vm.disconnect()
         if (permissionGranted && state.bluetoothState == Manager.State.POWERED_ON) {
             vm.startScan()
         }
+        onPauseOrDispose { }
     }
 
-    LaunchedEffect(state.connectState) {
-        if (state.connectState is ConnectState.Connected) {
-            onSuccess()
-        } else if (state.connectState is ConnectState.Failed) {
-            delay(1500)
-//            vm.resetConnectionState()
-//            vm.startScan()
+    LaunchedEffect(Unit) {
+        vm.navigationEvent.collect { event ->
+            if(event == NavEvent.GoToMenu)
+                onSuccess()
+        }
+    }
+
+    if (state.connectState == ConnectState.Failed) {
+        LaunchedEffect(Unit) {
+            delay(5000)                    // Show failure briefly
+            vm.resetConnectionState()      // Go back to Idle state
         }
     }
 
@@ -112,8 +119,9 @@ fun ConnectScreen(
         }
     }
 
-    Box(modifier){
-        when{
+    val devices by vm.peripherals.collectAsStateWithLifecycle()
+    Box(modifier) {
+        when {
             state.bluetoothState != Manager.State.POWERED_ON -> {
                 BluetoothActionCard(
                     icon = {
@@ -133,6 +141,7 @@ fun ConnectScreen(
                     }
                 )
             }
+
             !permissionGranted -> {
                 BluetoothActionCard(
                     icon = {
@@ -149,56 +158,24 @@ fun ConnectScreen(
                     onClick = { permissionLauncher.launch(permissions) },
                 )
             }
-            else -> {
-                val devices by vm.peripherals.collectAsStateWithLifecycle()
-//                val sortedPeripheralItems = state.peripherals.values
-//                        .sortedByDescending { it.rssi }
-//                        .toList()
-//                Column {
-//                val devices by vm.peripherals.collectAsStateWithLifecycle()
-//                    devices.forEach { device ->
-////                    item{
-//                        val isThisDeviceSelected = state.selectedPeripheral == device
-//                        val cs = if (isThisDeviceSelected) state.connectState else ConnectState.Idle
-//                        DeviceCard(
-//                            device.name, device.address, -1, cs,
-//                            Modifier.fillMaxWidth(),
-//                        ) {
-//                            vm.onPeripheralSelected(device)
-//                        }
-//                        HorizontalDivider(thickness = 1.dp, color = Color.Gray)
-////                    }
-//                    }
-//                }
-                LazyColumn(
-                    modifier = modifier.padding(6.dp, 0.dp)
-                ) {
-//                    state.peripherals.forEach { (string, device) ->
-//                        item{
-//                            val isThisDeviceSelected = state.selectedPeripheral == device.peripheral
-//                            val cs = if (isThisDeviceSelected) state.connectState else ConnectState.Idle
-//                            DeviceCard(
-//                                device.peripheral.name, device.peripheral.address, device.rssi, cs,
-//                                Modifier.fillMaxWidth(),
-//                            ) {
-//                                vm.onPeripheralSelected(device.peripheral)
-//                            }
-//                            HorizontalDivider(thickness = 1.dp, color = Color.Gray)
-//                        }
-//                    }
 
-                    items(
-                        devices
-                    ) { device ->
+            devices.isEmpty() -> EmptyState("No devices found. Make sure the device is charging.")
+
+            else -> {
+                LazyColumn(
+                    modifier = modifier.padding(0.dp, 3.dp)
+                ) {
+                    items(devices) { device ->
                         val isThisDeviceSelected = state.selectedPeripheral == device
-                        val cs = if (isThisDeviceSelected) state.connectState else ConnectState.Idle
+                        val cs =
+                            if (isThisDeviceSelected) state.connectState else ConnectState.Idle
                         DeviceCard(
                             device.name, device.address, -1, cs,
                             Modifier.fillMaxWidth(),
                         ) {
                             vm.onPeripheralSelected(device)
                         }
-                        HorizontalDivider(thickness = 1.dp, color = Color.Gray)
+//                        HorizontalDivider(thickness = 1.dp, color = Color.Gray)
                     }
                 }
             }

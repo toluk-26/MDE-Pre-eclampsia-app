@@ -3,11 +3,13 @@
 package com.example.pre_eclampsiascreener.ble
 
 import com.example.pre_eclampsiascreener.ble.managers.BatteryManager
+import com.example.pre_eclampsiascreener.ble.managers.CalibrateManager
 import com.example.pre_eclampsiascreener.ble.managers.ConfigManager
 import com.example.pre_eclampsiascreener.ble.managers.DeviceInfoManager
 import com.example.pre_eclampsiascreener.ble.managers.TimeManager
 import com.example.pre_eclampsiascreener.ble.managers.TransferManager
 import com.example.pre_eclampsiascreener.ble.repo.BatteryRepository
+import com.example.pre_eclampsiascreener.ble.repo.CalibrateRepository
 import com.example.pre_eclampsiascreener.ble.repo.ConfigRepository
 import com.example.pre_eclampsiascreener.ble.repo.DeviceInfoRepository
 import com.example.pre_eclampsiascreener.ble.repo.TimeRepository
@@ -50,6 +52,12 @@ enum class Profile (
         Uuid.parse(TRANSFER_SERVICE_UUID),
         ::TransferManager,
         { TransferRepository.clear() }
+    ),
+    CALIBRATE(
+        "Calibrate",
+        Uuid.parse(CALIBRATE_SERVICE_UUID),
+        ::CalibrateManager,
+        { CalibrateRepository.clear()}
     )
 
     // TODO: add services here

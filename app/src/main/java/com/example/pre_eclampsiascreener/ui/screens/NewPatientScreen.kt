@@ -69,8 +69,8 @@ fun AppNavHost(
                         uiState.idValue(),
                     ) { uiState.setPatientId(it) }
 
-                    NewPatientDestination.Calibrate -> CalibrateScreen()
-                    NewPatientDestination.Configure -> ConfigureScreen(showViewDataButton = false)
+                    NewPatientDestination.Calibrate -> CalibrateScreen({})
+                    NewPatientDestination.Configure -> ConfigureScreen(showViewDataButton = false, navigateToMenu = {}, navigateToData = {} )
                 }
             }
         }
@@ -87,29 +87,37 @@ fun NewPatientScreen(
     var selectedDestination by rememberSaveable { mutableIntStateOf(startDestination.ordinal) }
 
     Scaffold(
+        modifier = modifier,
         floatingActionButton = {
             if (selectedDestination != NewPatientDestination.Configure.ordinal) {
                 ExtendedFloatingActionButton(
-                    onClick = {  },
+                    onClick = {
+                        val next = selectedDestination + 1
+                        if (next < NewPatientDestination.entries.size) {
+                            selectedDestination = next
+                            navController.navigate(NewPatientDestination.entries[next].route)
+                        }
+                              },
                     icon = {
                         Icon(Icons.AutoMirrored.Outlined.ArrowForward, null)
                     },
                     text = { Text("Next") },
                 )
             }
-        }
-    ) { contentPadding ->
+        },
+
+    ) { innerPadding ->
         Column {
             PrimaryTabRow(
                 selectedTabIndex = selectedDestination,
-                modifier = Modifier.padding(contentPadding)
+                modifier = Modifier.padding(innerPadding)
             ) {
                 NewPatientDestination.entries.forEachIndexed { index, destination ->
                     Tab(
                         selected = selectedDestination == index,
                         onClick = {
-                            navController.navigate(route = destination.route)
-                            selectedDestination = index
+//                            navController.navigate(route = destination.route)
+//                            selectedDestination = index
                         },
                         text = {
                             Text(

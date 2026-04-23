@@ -13,12 +13,16 @@ import com.example.pre_eclampsiascreener.ble.repo.ConfigRepository
 import com.example.pre_eclampsiascreener.ble.repo.DeviceInfoRepository
 import com.example.pre_eclampsiascreener.ble.repo.TransferRepository
 import com.example.pre_eclampsiascreener.data.ScannedDevice
+import com.example.pre_eclampsiascreener.ui.state.NavEvent
 import com.example.pre_eclampsiascreener.ui.state.ScanUiState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.filterNot
@@ -34,6 +38,7 @@ import no.nordicsemi.kotlin.ble.client.android.CentralManager
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
 import no.nordicsemi.kotlin.ble.client.android.preview.PreviewPeripheral
 import no.nordicsemi.kotlin.ble.client.distinctByPeripheral
+import no.nordicsemi.kotlin.ble.core.ConnectionState
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PhyInUse
 import kotlin.time.Duration
@@ -49,6 +54,9 @@ class ScanViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _peripherals: MutableStateFlow<List<Peripheral>> = MutableStateFlow(emptyList())
     val peripherals = _peripherals.asStateFlow()
+
+    private val _navigationEvent = MutableSharedFlow<NavEvent>(extraBufferCapacity = 1)
+    val navigationEvent: SharedFlow<NavEvent> = _navigationEvent.asSharedFlow()
 
     private var scanJob: Job? = null
     private var connectJob: Job? = null
@@ -145,6 +153,16 @@ class ScanViewModel(application: Application) : AndroidViewModel(application) {
                 Log.e("connectstate", "Connectstate connected")
                 // start transfer
                 TransferRepository.trigger()
+                viewModelScope.launch {
+                    _navigationEvent.emit(NavEvent.GoToMenu)
+//                    _uiState.value.selectedPeripheral?.state?.collect { state ->
+//                        if (state == ConnectionState.Disconnected()) {
+//                            Log.e(TAG, "Unexpected disconnect!")
+//
+//                            disconnect()
+//                        }
+//                    }
+                }
             } catch (e: Exception) {
                 Log.e(TAG, "Connect failed", e)
                 _uiState.update { it.copy(connectState = ConnectState.Failed) }
@@ -168,6 +186,7 @@ class ScanViewModel(application: Application) : AndroidViewModel(application) {
             }
             resetConnectionState()
             _uiState.update { it.copy(selectedPeripheral = null) }
+//            _navigationEvent.emit(NavEvent.GoToConnection)
         }
     }
 

@@ -1,11 +1,15 @@
 package com.example.pre_eclampsiascreener.ui.viewmodels
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.pre_eclampsiascreener.ble.repo.ConfigRepository
+import com.example.pre_eclampsiascreener.ble.repo.TimeRepository
 import com.example.pre_eclampsiascreener.data.ConfigureData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 class ConfigureViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(ConfigureData())
@@ -69,5 +73,21 @@ class ConfigureViewModel : ViewModel() {
         val diastolic = parts.getOrNull(1)?.trim()?.toIntOrNull()
 
         return systolic to diastolic
+    }
+
+    fun sendConfigToDevice() {
+        viewModelScope.launch{
+            ConfigRepository.writeThresholds(
+                _uiState.value.minSystolic!!,
+                uiState.value.maxSystolic!!,
+                uiState.value.minDiastolic!!,
+                uiState.value.maxDiastolic!!
+            )
+            TimeRepository.writeTimezone(_uiState.value.timezone)
+        }
+    }
+
+    fun setTimezone(offset: Int) {
+        _uiState.update { it.copy(timezone = offset) }
     }
 }

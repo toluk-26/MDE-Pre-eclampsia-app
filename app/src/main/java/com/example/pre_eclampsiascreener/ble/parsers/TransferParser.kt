@@ -17,13 +17,11 @@ fun ByteArray.parseTransferData(): TransferServiceData? {
 
     return when (header.type) {
         PayloadType.SENSOR -> TransferServiceData(
-            header = header,
-            payload = Payload.Sensor(payload.toSensorData() ?: return null)
+            header = header, payload = Payload.Sensor(payload.toSensorData() ?: return null)
         )
 
         else -> TransferServiceData(
-            header = header,
-            payload = Payload.Debug(payload.toString(Charsets.UTF_8))
+            header = header, payload = Payload.Debug(payload.toString(Charsets.UTF_8))
         )
     }
 }
@@ -32,35 +30,32 @@ fun ByteArray.toHeader(): TransferHeaderData? {
     if (size != HEADER_SIZE) return null
     val buf = ByteBuffer.wrap(this).order(ByteOrder.LITTLE_ENDIAN)
     return TransferHeaderData(
-        type = buf.get().toPayloadType(),
-        length = buf.int.toUInt(),
-        timestamp = buf.long
+        type = buf.get().toPayloadType(), length = buf.int.toUInt(), timestamp = buf.long
     )
 }
 
-fun Byte.toPayloadType(): PayloadType =
-    when (this.toInt()) {
-        0 -> PayloadType.SENSOR
-        else -> PayloadType.DEBUG
-    }
+fun Byte.toPayloadType(): PayloadType = when (this.toInt()) {
+    0 -> PayloadType.SENSOR
+    else -> PayloadType.DEBUG
+}
 
 fun ByteArray.toSensorData(): SensorData? {
     if (size < SENSOR_SIZE) return null
     val buf = ByteBuffer.wrap(this).order(ByteOrder.LITTLE_ENDIAN)
     return SensorData(
-        buf.get().toInt(),
-        buf.get().toInt(),
-        buf.get().toInt(),
-        buf.get().toUInt(),
-    )
+        this[0].toInt() and 0xFF,
+        this[1].toInt() and 0xFF,
+        this[2].toInt() and 0xFF,
+        this[3].toUInt(),
+        )
 }
 
-fun ByteArray.toInt(): Int?{
-    if (size != Int.SIZE_BYTES ) return null
+fun ByteArray.toInt(): Int? {
+    if (size != Int.SIZE_BYTES) return null
     return ByteBuffer.wrap(this).order(ByteOrder.LITTLE_ENDIAN).int
 }
 
-fun ByteArray.toUInt(): UInt?{
-    if (size != UInt.SIZE_BYTES ) return null
+fun ByteArray.toUInt(): UInt? {
+    if (size != UInt.SIZE_BYTES) return null
     return ByteBuffer.wrap(this).order(ByteOrder.LITTLE_ENDIAN).int.toUInt()
 }

@@ -1,26 +1,30 @@
 package com.example.pre_eclampsiascreener
 
+import android.app.Activity
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.pre_eclampsiascreener.ble.ConnectState
 import com.example.pre_eclampsiascreener.ble.repo.BatteryRepository
 import com.example.pre_eclampsiascreener.ble.repo.ConfigRepository
 import com.example.pre_eclampsiascreener.ble.repo.DeviceInfoRepository
-import com.example.pre_eclampsiascreener.ui.AppViewModel
 import com.example.pre_eclampsiascreener.ui.components.Banner
 import com.example.pre_eclampsiascreener.ui.components.DeviceInfoBanner
 import com.example.pre_eclampsiascreener.ui.screens.ConfigureScreen
@@ -30,7 +34,9 @@ import com.example.pre_eclampsiascreener.ui.screens.DemoScreen
 import com.example.pre_eclampsiascreener.ui.screens.MenuScreen
 import com.example.pre_eclampsiascreener.ui.screens.NewPatientScreen
 import com.example.pre_eclampsiascreener.ui.screens.ViewDataScreen
+import com.example.pre_eclampsiascreener.ui.state.NavEvent
 import com.example.pre_eclampsiascreener.ui.theme.AppTheme
+import com.example.pre_eclampsiascreener.ui.viewmodels.ScanViewModel
 
 enum class AppScreen {
     DeviceConnection, Options, ViewData, Configure, NewPatient, Console, Demo, Calibrate;
@@ -54,11 +60,47 @@ fun PESApp(
     val currentRoute = backStackEntry?.destination?.route
 
     val isConnectionScreen = currentRoute == AppScreen.DeviceConnection.name
+    val scanVM: ScanViewModel = viewModel()
+    LaunchedEffect(Unit) {
+        scanVM.navigationEvent.collect { event ->
+            if(event == NavEvent.GoToConnection){
+                navController.navigate(AppScreen.DeviceConnection.name) {
+                    popUpTo(0)
+                }
+            }
+        }
+    }
+
+    val onBackClick: () -> Unit = when (currentRoute) {
+        AppScreen.DeviceConnection.name -> {
+            val context = LocalContext.current
+            {
+                (context as? Activity)?.finish()
+            }
+        }
+
+        AppScreen.Options.name -> {
+            {
+                scanVM.disconnect()
+                navController.navigate(AppScreen.DeviceConnection.name) {
+                    popUpTo(AppScreen.DeviceConnection.name) { inclusive = false }
+                }
+            }
+        }
+
+        else -> {
+            {
+                navController.navigate(AppScreen.Options.name) {
+                    popUpTo(AppScreen.Options.name) { inclusive = false }
+                }
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
             Column() {
-                Banner {}   // your top banner
+                Banner { onBackClick() }   // your top banner
                 if (!isConnectionScreen) {
                     // Show device info only when connected
                     val batteryLevel by BatteryRepository.data.collectAsState()
@@ -70,67 +112,53 @@ fun PESApp(
             }
         }
     ) { innerPadding ->
-//        Column {
-//                DeviceInfoBanner("pissin", "123456789", 11)
+        val modifier = Modifier
+            .fillMaxSize()
+        NavHost(
+            navController = navController,
+            startDestination = AppScreen.DeviceConnection.name,
+            modifier = modifier.padding(innerPadding)
+        ) {
 
-            NavHost(
-                navController = navController,
-                startDestination = AppScreen.DeviceConnection.name,
-                modifier = Modifier
-                    .padding(innerPadding)
-                    .fillMaxSize()           // ← Important
-            ) {
-
-                composable(route = AppScreen.DeviceConnection.name) {
-                    ConnectScreen(
-                        onSuccess = {
-                            navController.navigate(AppScreen.Options.name)
-                        },
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
-                composable(route = AppScreen.Options.name) {
-                    val config by ConfigRepository.data.collectAsState()
-                    MenuScreen(
-                        navController = navController,
-                        modifier = Modifier.fillMaxSize(),
-                        demoMode = config.demoMode
-                    )
-                }
-                composable(route = AppScreen.ViewData.name) {
-                    ViewDataScreen(
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
-                composable(route = AppScreen.Configure.name) {
-                    ConfigureScreen(
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
-                composable(route = AppScreen.NewPatient.name) {
-                    NewPatientScreen(
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
-                composable(route = AppScreen.Console.name) {
-                    ConsoleScreen(
-                        Modifier.fillMaxSize()
-                    )
-                }
-                composable(route = AppScreen.Demo.name) {
-                    DemoScreen(
-                        Modifier.fillMaxSize()
-                    )
-                }
+            composable(route = AppScreen.DeviceConnection.name) {
+                BackHandler { onBackClick() }
+                ConnectScreen(
+                    onSuccess = {
+                        navController.navigate(AppScreen.Options.name)
+                    },
+                    modifier = modifier,
+                    vm = scanVM
+                )
+            }
+            composable(route = AppScreen.Options.name) {
+                BackHandler { onBackClick() }
+                val config by ConfigRepository.data.collectAsState()
+                MenuScreen(
+                    navController = navController,
+                    modifier = modifier,
+                    demoMode = config.demoMode
+                )
+            }
+            composable(route = AppScreen.ViewData.name) {
+                BackHandler { onBackClick() }
+                ViewDataScreen( modifier )
+            }
+            composable(route = AppScreen.Configure.name) {
+                BackHandler { onBackClick() }
+                ConfigureScreen( modifier, navigateToMenu = {}, navigateToData = {} )
+            }
+            composable(route = AppScreen.NewPatient.name) {
+                BackHandler { onBackClick() }
+                NewPatientScreen( modifier )
+            }
+            composable(route = AppScreen.Console.name) {
+                BackHandler { onBackClick() }
+                ConsoleScreen( modifier )
+            }
+            composable(route = AppScreen.Demo.name) {
+                BackHandler { onBackClick() }
+                DemoScreen( modifier )
             }
         }
-    }
-//    }
-
-@Preview(showBackground = true)
-@Composable
-fun AppScreenPreview() {
-    AppTheme {
-        PESApp()
     }
 }

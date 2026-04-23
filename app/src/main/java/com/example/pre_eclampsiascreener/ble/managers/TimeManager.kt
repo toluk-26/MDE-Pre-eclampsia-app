@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.onEach
 import no.nordicsemi.kotlin.ble.client.RemoteCharacteristic
 import no.nordicsemi.kotlin.ble.client.RemoteService
 import no.nordicsemi.kotlin.ble.core.WriteType
+import java.time.Instant
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -33,19 +34,19 @@ internal class TimeManager : ServiceManager {
         unixTimeCharacteristic = remoteService.characteristics.firstOrNull {
             it.uuid == UNIX_TIME_CHARACTERISTIC_UUID
         } ?: throw IllegalStateException("Time characteristic not found")
-        try {
-            unixTimeCharacteristic.subscribe()
-                .mapNotNull { it.toUnixTime() }
-                .onEach { TimeRepository.updateTime(it) }
-                .onCompletion { TimeRepository.clear() }
-                .catch { e ->
-                    Log.e(TAG, "Subscribe error: ${e.message}")
-                }
-                .launchIn(scope)
-
-        } catch (e: Exception) {
-            Log.e(TAG, "Subscribe error null: ${e.message}")
-        }
+//        try {
+//            unixTimeCharacteristic.subscribe()
+//                .mapNotNull { it.toUnixTime() }
+//                .onEach { TimeRepository.updateTime(it) }
+//                .onCompletion { TimeRepository.clear() }
+//                .catch { e ->
+//                    Log.e(TAG, "Subscribe error: ${e.message}")
+//                }
+//                .launchIn(scope)
+//
+//        } catch (e: Exception) {
+//            Log.e(TAG, "Subscribe error null: ${e.message}")
+//        }
         try {
             unixTimeCharacteristic
         .read().toUnixTime()
@@ -70,11 +71,11 @@ internal class TimeManager : ServiceManager {
                 }
                 .onCompletion { TimeRepository.clear() }
                 .catch { e ->
-                    Log.e(TAG, "Subscribe error: ${e.message}")
+                    Log.e(TAG, "notify read catch tz error: ${e.message}")
                 }
                 .launchIn(scope)
         } catch (e: Exception) {
-            Log.e(TAG, "Subscribe error null: ${e.message}")
+            Log.e(TAG, "Subscribe tz error null: ${e.message}")
         }
         try {
             timezoneCharacteristic
@@ -86,6 +87,9 @@ internal class TimeManager : ServiceManager {
         } catch (e: Exception) {
             Log.e(TAG, "Read error: ${e.message}")
         }
+        val currentTime: Long = Instant.now().epochSecond
+        writeTime(currentTime)
+        Log.d(TAG, "Unix Time is: $currentTime")
     }
 
     companion object {
@@ -118,7 +122,7 @@ internal class TimeManager : ServiceManager {
 
                     // — OR — Write WITH response (waits for ack, can throw on failure)
                     // myWriteCharacteristic.write(data, WriteType.WITH_RESPONSE)
-                    Log.e(TAG, "Write: ${dataBytes.contentToString()}")
+                    Log.d(TAG, "Write: ${dataBytes.contentToString()}")
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Write error: ${e.message}")

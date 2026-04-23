@@ -14,6 +14,7 @@ import com.patrykandpatrick.vico.compose.cartesian.data.CartesianChartModelProdu
 import com.patrykandpatrick.vico.compose.cartesian.data.CartesianLayerRangeProvider
 import com.patrykandpatrick.vico.compose.cartesian.data.CartesianValueFormatter
 import com.patrykandpatrick.vico.compose.cartesian.decoration.HorizontalBox
+import com.patrykandpatrick.vico.compose.cartesian.layer.CartesianLayerPadding
 import com.patrykandpatrick.vico.compose.cartesian.layer.LineCartesianLayer
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLine
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLineCartesianLayer
@@ -55,6 +56,7 @@ fun DataChart(
                     systolicLine, diastolicLine,
                 ),
                 rangeProvider = rangeProvider,
+                pointSpacing = 1.dp
             ),
             startAxis = VerticalAxis.rememberStart(
                 valueFormatter = startAxisFormatter,
@@ -73,7 +75,8 @@ fun DataChart(
             ),
         ),
         modelProducer = modelProducer,
-        modifier = modifier
+        modifier = modifier,
+        animateIn = false,
     )
 }
 

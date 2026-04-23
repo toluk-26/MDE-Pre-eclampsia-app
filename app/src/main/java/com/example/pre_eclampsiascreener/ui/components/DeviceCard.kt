@@ -6,10 +6,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -35,6 +37,51 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.pre_eclampsiascreener.R
 import com.example.pre_eclampsiascreener.ble.ConnectState
+import com.example.pre_eclampsiascreener.ui.theme.AppTheme
+
+@Preview(showBackground = true)
+@Composable
+fun DevicesPreviewIdle() {
+    AppTheme {
+        LazyColumn(
+            Modifier
+            .fillMaxSize()
+            .padding(0.dp, 3.dp),
+            verticalArrangement = Arrangement.spacedBy(3.dp)
+        ) {
+            item {
+                DeviceCard(
+                    "PES-2446",
+                    "FD:6D:43:3B:F0:E8",
+                    -90,
+                    ConnectState.Connecting,
+                    modifier = Modifier.fillMaxWidth(),
+                    {}
+                )
+            }
+            item {
+                DeviceCard(
+                    "PES-3557",
+                    "FD:6D:43:3B:F1:D9",
+                    -90,
+                    ConnectState.Idle,
+                    modifier = Modifier.fillMaxWidth(),
+                    {}
+                )
+            }
+            item {
+                DeviceCard(
+                    "PES-6767",
+                    "FD:6D:43:67:67:67",
+                    -90,
+                    ConnectState.Idle,
+                    modifier = Modifier.fillMaxWidth(),
+                    {}
+                )
+            }
+        }
+    }
+}
 
 
 @Preview(showBackground = true)
@@ -69,15 +116,15 @@ fun DeviceCard(
 
     Card(
         onClick   = onDeviceClick,
-//        enabled   = isAbleToConnect,
+        enabled   = isAbleToConnect,
         modifier  = modifier.fillMaxWidth(),
         shape     = RoundedCornerShape(16.dp),
-//        colors    = CardDefaults.cardColors(
-//            containerColor         = MaterialTheme.colorScheme.surfaceContainer,
-//            disabledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
-//            disabledContentColor   = MaterialTheme.colorScheme.onSurface,
-//        ),
-//        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        colors    = CardDefaults.cardColors(
+            containerColor         = MaterialTheme.colorScheme.surfaceContainer,
+            disabledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+            disabledContentColor   = MaterialTheme.colorScheme.onSurface,
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
         border    = if (isFailed)
             BorderStroke(1.dp, MaterialTheme.colorScheme.error)
         else null,
@@ -115,7 +162,7 @@ fun DeviceCard(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text       = name ?: "Unknown Device",
-                    style      = MaterialTheme.typography.titleSmall,
+                    style      = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     color      = MaterialTheme.colorScheme.onSurface,
                 )
@@ -125,11 +172,11 @@ fun DeviceCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 // Debug only — remove when rssi is no longer needed
-                Text(
-                    text  = "rssi: $rssi",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.outline,
-                )
+//                Text(
+//                    text  = "rssi: $rssi",
+//                    style = MaterialTheme.typography.labelSmall,
+//                    color = MaterialTheme.colorScheme.outline,
+//                )
             }
 
             // Trailing state indicator
